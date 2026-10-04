@@ -17,6 +17,26 @@ namespace Autocomplete
         const dpp::autocomplete_t &event
     );
 
+    ////////////////////////////////
+    ///// government.types.cpp /////
+    ////////////////////////////////
+
+    void government_types
+    (
+        dpp::cluster              &bot,
+        const dpp::autocomplete_t &event
+    );
+
+    //////////////////////////
+    ///// ideologies.cpp /////
+    //////////////////////////
+
+    void ideologies
+    (
+        dpp::cluster              &bot,
+        const dpp::autocomplete_t &event
+    );
+
     /////////////////////
     ///// ranks.cpp /////
     /////////////////////

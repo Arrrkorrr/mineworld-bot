@@ -37,7 +37,12 @@ void Events::autocomplete
             ////////////////// 3) //////////////////
             const std::string subcommand = event.options[0].name;
 
-            if (subcommand == "info" || subcommand == "join" || subcommand == "relation")
+            if (subcommand == "create")
+            {
+                Autocomplete::government_types(bot, event);
+                Autocomplete::ideologies(bot, event);
+            }
+            else if (subcommand == "info" || subcommand == "join" || subcommand == "relation")
                 Autocomplete::nations(bot, database, event);
             else if (subcommand == "rank")
                 Autocomplete::ranks(bot, event);
