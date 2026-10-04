@@ -34,7 +34,7 @@
 
     Parameters (variable_name / type / description):
         - bot       / dpp::cluster              / Client of the bot with all related information.
-        - database  / MYSQL*                    / Database used for the FSB bot and the MineWorld server.
+        - database  / MYSQL*                    / MineWorld database
         - event     / dpp::interaction_create_t / All information about the event.
 
     Returns (type + description):
@@ -195,7 +195,7 @@ void Nation::nation_rank
     }
 
     ///////// c. /////////
-    Database::Output config = Database::db_query(database, "SELECT world_channel, flags_url FROM config LIMIT 1");
+    Database::Output config = Database::db_query(database, "SELECT world_channel FROM config LIMIT 1");
 
     if (config.size() == 0)
     {
@@ -204,7 +204,6 @@ void Nation::nation_rank
     }
 
     const dpp::snowflake world_channel = dpp::snowflake(config[0]["world_channel"]);
-    const std::string flags_url = config[0]["flags_url"];
 
     ///////// d. /////////
     const dpp::snowflake guild_id = event.command.guild_id;
@@ -214,14 +213,12 @@ void Nation::nation_rank
     {
         embed.set_color(dpp::colors::gold)
         .set_title("Leadership Change")
-        .set_thumbnail(flags_url + executer_nation_id + ".png")
         .set_description("Head of State <@" + std::to_string(executer_id) + "> of " + display_name + " resigned from their functions and named " + user_rank_name + " <@" + std::to_string(user_id) + "> as their successor.");
     }
     else if (new_rank == PRIME_MINISTER)
     {
         embed.set_color(dpp::colors::gold)
         .set_title("Prime Minister Change")
-        .set_thumbnail(flags_url + executer_nation_id + ".png")
         .set_description("Head of State <@" + std::to_string(executer_id) + "> named " + user_rank_name + " <@" + std::to_string(user_id) + "> as the new Prime Minister of " + display_name + ".");
     }
     else
@@ -230,7 +227,6 @@ void Nation::nation_rank
 
         embed.set_color(color)
         .set_title("Rank Modification")
-        .set_thumbnail(flags_url + executer_nation_id + ".png")
         .set_description(executer_rank_name + " <@" + std::to_string(executer_id) + "> just " + verb + " " + user_rank_name + " <@" + std::to_string(user_id) + "> to " + rank_name + " of " + display_name + ".");
     }
 

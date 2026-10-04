@@ -2,7 +2,6 @@
 
 #include "../../config/enumerations.hpp"
 #include "../../utils/database/database.hpp"
-#include "../../utils/text/text.hpp"
 
 #include <dpp/dpp.h>
 #include <mysql/mysql.h>
@@ -15,7 +14,6 @@
         1) We do some verification.
             a. Verify that we can get some nation ID from the message content (4 "||" characters + at least one character).
             b. Verify that the nation exists.
-            c. Try to get some configuration from database.
         2) Process the menu display request.
             a. Count all sanctions from all existing sanction types.
             b. Count all resolutions proposed by the nation.
@@ -30,7 +28,7 @@
 
     Parameters (variable_name / type / description):
         - bot       / dpp::cluster        / Client of the bot with all related information.
-        - database  / MYSQL*              / Database used for the FSB bot and the MineWorld server.
+        - database  / MYSQL*              / MineWorld database
         - event     / dpp::select_click_t / All information about the event.
 
     Returns (type + description):
@@ -63,15 +61,6 @@ void NationInfo::united_nations
         return;
     }
 
-    ///////// c. /////////
-    Database::Output config = Database::db_query(database, "SELECT flags_url FROM config LIMIT 1");
-
-    if (config.size() == 0)
-    {
-        event.reply(dpp::message(":prohibited: No configuration is available to find required display elements.").set_flags(dpp::m_ephemeral));
-        return;
-    }
-
     ////////////////// 2) //////////////////
     ///////// a. /////////
     Database::Output trade_penalties = Database::db_query(database, "SELECT 1 FROM sanctions WHERE sanctioned_nation = '" + nation_id + "' AND pending = 0 AND sanction_type = " + std::to_string(TRADE_PENALTY));
@@ -90,7 +79,7 @@ void NationInfo::united_nations
     ///////// c. /////////
     Database::Output membership = Database::db_query(database, "SELECT joining_time, invited_by, vote_start, vote_duration, votes_for, votes_against FROM un_membership WHERE nation_id = '" + nation_id + "' AND pending = 0 LIMIT 1");
 
-    std::string un_state = "No";
+    std::string is_un_state = "No";
     std::string joining_time = "Never";
     std::string invited_by = "Not a UN member yet";
     std::string vote_proposition = "Not a UN member yet";
@@ -100,9 +89,11 @@ void NationInfo::united_nations
     ///////// d. /////////
     if (membership.size() != 0)
     {
-        un_state = "Yes";
-        joining_time = ("<t:" + membership[0]["joining_time"] + ":f>");
+        is_un_state = "Yes";
         invited_by = membership[0]["invited_by"];
+        joining_time = ("<t:" + membership[0]["joining_time"] + ":f>");
+        nations_against = "";
+        nations_for = "";
         vote_proposition = ("<t:" + membership[0]["vote_start"] + ":f>.\n**Vote Duration**: " + membership[0]["vote_duration"]);
 
         ///////// e. /////////
@@ -112,49 +103,102 @@ void NationInfo::united_nations
             invited_by = inviting_nation[0]["display_name"];
 
         ///////// f. /////////
-        nations_for = "";
-
         std::istringstream first_stream(membership[0]["votes_for"]);
         std::string id;
+        int count = 10;
 
         while (std::getline(first_stream, id, ','))
         {
-            const std::string flag = Text::get_nation_flag(id);
-            nations_for += (flag + " ");
+            if (count <= 0)
+                break;
+
+            Database::Output voting_nation = Database::db_query(database, "SELECT display_name FROM nations WHERE nation_id = '" + id + "' LIMIT 1");
+
+            if (voting_nation.size() == 0)
+                continue;
+
+            nations_for += (voting_nation[0]["display_name"]);
+            count--;
         }
 
         ///////// g. /////////
         std::istringstream second_stream(membership[0]["votes_against"]);
         nations_against = "";
+        count = 10;
 
         while (std::getline(second_stream, id, ','))
         {
-            const std::string flag = Text::get_nation_flag(id);
-            nations_against += (flag + " ");
+            if (count <= 0)
+                break;
+
+            Database::Output voting_nation = Database::db_query(database, "SELECT display_name FROM nations WHERE nation_id = '" + id + "' LIMIT 1");
+
+            if (voting_nation.size() == 0)
+                continue;
+
+            nations_against += (voting_nation[0]["display_name"]);
+            count--;
         }
     }
 
     ///////// h. /////////
     const std::string display_name = nations[0]["display_name"];
-    const std::string flags_url = config[0]["flags_url"];
 
     const std::string adopted_resolutions = nations[0]["passed_resolutions"];
+    const std::string is_veto_state = (nations[0]["veto_state"] == "0" ? "No" : "Yes");
     const std::string last_adopted_resolution = (nations[0]["last_passed_resolution"] == "0" ? "Never" : "<t:" + nations[0]["last_passed_resolution"] + ":f>");
     const std::string last_resolution = (nations[0]["last_resolution"] == "0" ? "Never" : "<t:" + nations[0]["last_resolution"] + ":f>");
     const std::string last_veto = (nations[0]["last_veto_usage"] == "0" ? "Never" : "<t:" + nations[0]["last_veto_usage"] + ":f>");
     const std::string resolutions_count = nations[0]["resolutions_count"];
     const std::string veto_count = nations[0]["veto_usage_count"];
-    const std::string veto_state = (nations[0]["veto_state"] == "0" ? "No" : "Yes");
 
     ///////// i. /////////
     const dpp::embed embed = dpp::embed()
     .set_color(dpp::colors::light_blue)
     .set_title(display_name)
-    .set_thumbnail(flags_url + nation_id + ".png")
-    .add_field(":mag: Profile", "**Member of United Nations**: " + un_state + ".\n**Veto State**: " + veto_state + ".")
-    .add_field(":information: Membership Details", "**Joined United Nations**: " + joining_time + ".\n**Inviting Nation**: " + invited_by + ".\n**Proposition Vote**: " + vote_proposition + ".\n**Favorable Nations**: " + nations_for + "\n**Nations Against** " + nations_against)
-    .add_field(":bar_chart: Activity", "**Proposed Resolutions**: " + resolutions_count + ".\n**Adopted Resolutions**: " + adopted_resolutions + ".\n**Sanctions Proposed**: " + std::to_string(sanctions.size()) + ".\n**Laws Proposed**: " + std::to_string(laws.size()) + ".\n**Memberships Proposed**: " + std::to_string(proposed_memberships.size()) + ".\n**Veto Count**: " + veto_count + ".\n**Last Resolution**: " + last_resolution + ".\n**Last Adopted Resolution**: " + last_adopted_resolution + ".\n**Last Veto**: " + last_veto + ".")
-    .add_field(":hammer: Sanctions", "**Trade Penalties**: " + std::to_string(trade_penalties.size()) + ".\n**Import Bans**: " + std::to_string(import_bans.size()) + ".\n**Export Bans**: " + std::to_string(export_bans.size()) + ".\n**Trade Bans**: " + std::to_string(trade_bans.size()) + ".\n**Fines**: " + std::to_string(fines.size()) + ".\n**Veto Abuses**: " + std::to_string(veto_abuses.size()) + ".\n**Events Bans**: " + std::to_string(events_bans.size()) + ".")
+    .add_field
+    (
+        ":mag: Profile",
+
+        "**Member of United Nations**: " + is_un_state + ".\n" +
+        "**Veto State**: " + is_veto_state + "."
+    )
+    .add_field
+    (
+        ":information: Membership Details",
+
+        "**Joined United Nations**: " + joining_time + ".\n" +
+        "**Inviting Nation**: " + invited_by + ".\n" +
+        "**Proposition Vote**: " + vote_proposition + ".\n" +
+        "**Favorable Nations**: " + nations_for + " nations.\n" +
+        "**Nations Against** " + nations_against + " nation."
+    )
+    .add_field
+    (
+        ":bar_chart: Activity",
+
+        "**Proposed Resolutions**: " + resolutions_count + ".\n" +
+        "**Adopted Resolutions**: " + adopted_resolutions + ".\n" +
+        "**Sanctions Proposed**: " + std::to_string(sanctions.size()) + ".\n" +
+        "**Laws Proposed**: " + std::to_string(laws.size()) + ".\n" +
+        "**Memberships Proposed**: " + std::to_string(proposed_memberships.size()) + ".\n" +
+        "**Veto Count**: " + veto_count + ".\n" +
+        "**Last Resolution**: " + last_resolution + ".\n" +
+        "**Last Adopted Resolution**: " + last_adopted_resolution + ".\n" +
+        "**Last Veto**: " + last_veto + "."
+    )
+    .add_field
+    (
+        ":hammer: Sanctions",
+
+        "**Trade Penalties**: " + std::to_string(trade_penalties.size()) + ".\n" +
+        "**Import Bans**: " + std::to_string(import_bans.size()) + ".\n" +
+        "**Export Bans**: " + std::to_string(export_bans.size()) + ".\n" +
+        "**Trade Bans**: " + std::to_string(trade_bans.size()) + ".\n" +
+        "**Fines**: " + std::to_string(fines.size()) + ".\n" +
+        "**Veto Abuses**: " + std::to_string(veto_abuses.size()) + ".\n" +
+        "**Events Bans**: " + std::to_string(events_bans.size()) + "."
+    )
     .set_footer(dpp::embed_footer().set_icon(event.command.usr.get_avatar_url()).set_text("Requested by " + event.command.usr.username + "."));
 
     ///////// j. /////////

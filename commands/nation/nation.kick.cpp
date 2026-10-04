@@ -30,7 +30,7 @@
 
     Parameters (variable_name / type / description):
         - bot       / dpp::cluster              / Client of the bot with all related information.
-        - database  / MYSQL*                    / Database used for the FSB bot and the MineWorld server.
+        - database  / MYSQL*                    / MineWorld database
         - event     / dpp::interaction_create_t / All information about the event.
 
     Returns (type + description):
@@ -142,7 +142,7 @@ void Nation::nation_kick
     });
 
     ///////// c. /////////
-    Database::Output config = Database::db_query(database, "SELECT world_channel, flags_url FROM config LIMIT 1");
+    Database::Output config = Database::db_query(database, "SELECT world_channel FROM config LIMIT 1");
 
     if (config.size() == 0)
     {
@@ -151,13 +151,11 @@ void Nation::nation_kick
     }
 
     const dpp::snowflake world_channel = dpp::snowflake(config[0]["world_channel"]);
-    const std::string flags_url = config[0]["flags_url"];
 
     ///////// d. /////////
     const dpp::embed embed = dpp::embed()
     .set_color(dpp::colors::red)
     .set_title("Citizenship Removal")
-    .set_thumbnail(flags_url + executer_nation_id + ".png")
     .set_description(user_rank_name + " <@" + std::to_string(user_id) + "> was kicked out of " + display_name + " by " + executer_rank_name + " <@" + std::to_string(executer_id) + ">.");
 
     bot.message_create

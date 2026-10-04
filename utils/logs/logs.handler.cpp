@@ -20,7 +20,7 @@
             a. Get the current timestamp and convert into a data.
             b. Format the message. Date format: DD.MM.YY-HH:MN:SS.
             c. Send the log into the terminal.
-        3) If enabled (config/tweaks.hpp), we also write the log into the "fsb.logs".
+        3) If enabled (config/tweaks.hpp), we also write the log into the "bot.logs".
 
     Parameters (variable_name / type / description):
         - message / string / Message to log.
@@ -51,7 +51,7 @@ void Logs::log
 
     ////////////////// 3) //////////////////
     if constexpr (Tweaks::ENABLE_LOGS_FILE)
-        Files::write_file(true, log, "fsb.logs");
+        Files::write_file(true, log, "bot.logs");
 }
 
 
@@ -61,7 +61,7 @@ void Logs::log
 
     Tasks:
         1) Send the log into the terminal.
-        2) If enabled (config/tweaks.hpp), we also write the log into the "fsb.logs".
+        2) If enabled (config/tweaks.hpp), we also write the log into the "bot.logs".
         3) Throw a runtime error with the message.
 
     Parameters (variable_name / type / description):
@@ -80,7 +80,7 @@ void Logs::crash_log
 
     ////////////////// 2) //////////////////
     if constexpr (Tweaks::ENABLE_LOGS_FILE)
-        Files::write_file(true, message, "fsb.logs");
+        Files::write_file(true, message, "bot.logs");
 
     ////////////////// 3) //////////////////
     throw std::runtime_error(message);

@@ -6,17 +6,6 @@
 
 namespace Autocomplete
 {
-    /////////////////////////////
-    ///// empty.nations.cpp /////
-    /////////////////////////////
-
-    void empty_nations
-    (
-        dpp::cluster              &bot,
-        MYSQL*                    &database,
-        const dpp::autocomplete_t &event
-    );
-
     ///////////////////////
     ///// nations.cpp /////
     ///////////////////////

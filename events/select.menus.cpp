@@ -17,7 +17,7 @@
 
     Parameters (variable_name / type / description):
         - bot       / dpp::cluster / Client of the bot with all related information.
-        - database  / MYSQL*       / Database used for the FSB bot and the MineWorld server.
+        - database  / MYSQL*       / MineWorld database
 
     Returns (type + description):
         No object returned.

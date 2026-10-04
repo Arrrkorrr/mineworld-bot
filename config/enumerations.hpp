@@ -16,6 +16,12 @@ enum JoinConditions
     CLOSED = 2
 };
 
+enum Journalism
+{
+    WHITELIST = 0,
+    BLACKLIST = 1
+};
+
 enum Ranks
 {
     CITIZEN = 0,
@@ -34,12 +40,6 @@ enum Sanctions
     FINE = 4,
     VETO_ABUSE = 5,
     EVENTS_BAN = 6
-};
-
-enum Journalism
-{
-    WHITELIST = 0,
-    BLACKLIST = 1
 };
 
 #endif

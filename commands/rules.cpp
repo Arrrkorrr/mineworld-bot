@@ -26,7 +26,7 @@ void Commands::rules
         (
             std::string("## :judge: Rules\n\n") +
             ":warning: The staff and owners of this project are **NOT responsible** in case of losses, doxxing, scams, harassment or ANY **harmful actions** committed by **non-staff members**, but we will take actions accordingly.\n" +
-            "The staff can **sanction** and **censor** members, or **take decisions** at their **own discretion**. The FSB bot can also **automatically censor** content.\n" +
+            "The staff can **sanction** and **censor** members, or **take decisions** at their **own discretion**. The MineWorld bot can also **automatically censor** content.\n" +
             "But if you feel that a sanction was **totally unfair**/**unjustified**, you can contest at `arkorbyte@proton.me`.\n\n" +
             "### :speech_left: Discord server\n" +
             "- You must comply with **Discord Terms of Service** and **Community Guidelines** that you may find [here](https://discord.com/terms).\n" +

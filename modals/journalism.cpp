@@ -2,7 +2,6 @@
 
 #include "../utils/database/database.hpp"
 #include "../utils/miscellaneous/miscellaneous.hpp"
-#include "../utils/text/text.hpp"
 
 #include <algorithm>
 #include <dpp/dpp.h>
@@ -27,7 +26,7 @@
 
     Parameters (variable_name / type / description):
         - bot      / dpp::cluster       / Client of the bot with all related information.
-        - database / MYSQL*             / Database used for the FSB bot and the MineWorld server.
+        - database / MYSQL*             / MineWorld database
         - event    / dpp::form_submit_t / All information about the event.
 
     Returns (type + description):
@@ -107,15 +106,13 @@ void Modals::journalism
     Database::db_query(database, "UPDATE nations SET media_freedom = '" + new_media_freedom + "', media_posts = '" + media_posts + "', last_post = '" + now + "' WHERE nation_id = '" + nation_id + "'");
 
     ///////// b. /////////
-    const std::string flag = Text::get_nation_flag(nation_id);
 
     const dpp::embed embed = dpp::embed()
-    .set_color(dpp::colors::cream_white)
-    .set_title(flag + " " + article_title)
+    .set_color(dpp::colors::cream_white)\
     .set_description(article_content)
     .set_thumbnail(top_image_url)
     .set_image(bottom_image_url)
-    .set_footer(dpp::embed_footer().set_text("Published by " + event.command.usr.username + " from " + flag + " " + display_name + "."));
+    .set_footer(dpp::embed_footer().set_text("Published by " + event.command.usr.username + " from " + display_name + "."));
 
     const dpp::component buttons = dpp::component()
     .add_component (

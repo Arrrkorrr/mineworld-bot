@@ -5,13 +5,13 @@
 
 namespace Text
 {
-    /////////////////////
-    ///// emoji.cpp /////
-    /////////////////////
+    /////////////////////////
+    ///// lowercase.cpp /////
+    /////////////////////////
 
-    std::string get_nation_flag
+    std::string to_lowercase
     (
-        const std::string &nation_id
+        const std::string &input
     );
 
     //////////////////////////

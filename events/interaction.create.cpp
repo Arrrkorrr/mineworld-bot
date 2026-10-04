@@ -17,7 +17,7 @@
 
     Parameters (variable_name / type / description):
         - bot       / dpp::cluster / Client of the bot with all related information.
-        - database  / MYSQL*       / Database used for the FSB bot and the MineWorld server.
+        - database  / MYSQL*       / MineWorld database
 
     Returns (type + description):
         No object returned.
@@ -44,8 +44,8 @@ void Events::interaction_create
             ///////// b. /////////
             const std::string subcommand = event.command.get_command_interaction().options[0].name;
 
-            if (subcommand == "claim")
-                Commands::Nation::claim_nation(bot, database, event);
+            if (subcommand == "create")
+                Commands::Nation::nation_create(bot, database, event);
             else if (subcommand == "config")
                 Commands::Nation::nation_config(bot, database, event);
             else if (subcommand == "info")

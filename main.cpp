@@ -18,10 +18,10 @@
 
     Tasks:
         1) Handle the logs file.
-            a. Remove the old fsb.logs file if it exists.
-            b. Create a new fsb.logs file if the log file is turned on.
+            a. Remove the old bot.logs file if it exists.
+            b. Create a new bot.logs file if the log file is turned on.
         2) Load configuration.
-            a. Parse and retrieve values from the fsb.config file.
+            a. Parse and retrieve values from the bot.config file.
             b. Verify that the port in the config is valid or we fall back on MariaDB default port.
         3) Establish a connection to the database.
         4) Start the bot.
@@ -39,16 +39,16 @@ int main()
 {
     ////////////////// 1) //////////////////
     ///////// a. /////////
-    if (std::filesystem::exists("fsb.logs"))
-        std::filesystem::remove("fsb.logs");
+    if (std::filesystem::exists("bot.logs"))
+        std::filesystem::remove("bot.logs");
 
     ///////// b. /////////
     if constexpr (Tweaks::ENABLE_LOGS_FILE)
-        Files::create_new_empty_file("fsb.logs");
+        Files::create_new_empty_file("bot.logs");
 
     ////////////////// 2) //////////////////
     ///////// a. /////////
-    std::map<std::string, std::string> config = Parsers::parse_config_file("fsb.config");
+    std::map<std::string, std::string> config = Parsers::parse_config_file("bot.config");
 
     const std::string token = config["TOKEN"];
     const std::string db_name = config["DB_NAME"];

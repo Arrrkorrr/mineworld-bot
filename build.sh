@@ -10,11 +10,11 @@ cd cmake
 cmake ../../
 make
 
-mv fsb ../out
+mv bot ../out
 cd ../out
 
-cp ../../config/fsb.config ./fsb.config
-chmod +x fsb
+cp ../../config/bot.config ./bot.config
+chmod +x bot
 
 echo ""
-./fsb
+./bot

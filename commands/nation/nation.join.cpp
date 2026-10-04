@@ -31,7 +31,7 @@
 
     Parameters (variable_name / type / description):
         - bot       / dpp::cluster              / Client of the bot with all related information.
-        - database  / MYSQL*                    / Database used for the FSB bot and the MineWorld server.
+        - database  / MYSQL*                    / MineWorld database
         - event     / dpp::interaction_create_t / All information about the event.
 
     Returns (type + description):
@@ -93,12 +93,11 @@ void Nation::join_nation
     ///////// a. /////////
     const std::string now = std::to_string(Miscellaneous::get_current_timestamp());
     const std::string citizen = std::to_string(CITIZEN);
-    const std::string flag = Text::get_nation_flag(nation_id);
 
     if (join_condition == OPENED)
     {
         Database::db_query(database, "INSERT INTO nationality (user_id, nation_id, rank, last_rank_update, joining_time) VALUES ('" + std::to_string(user_id) + "', '" + nation_id + "', '" + citizen + "', '" + now + "', '" + now + "')");
-        event.reply(dpp::message(flag + " You are now a citizen of " + display_name + ".").set_flags(dpp::m_ephemeral));
+        event.reply(dpp::message(":hammer_pick: You are now a citizen of " + display_name + ".").set_flags(dpp::m_ephemeral));
     }
 
     ///////// b. /////////
@@ -125,7 +124,7 @@ void Nation::join_nation
         }
 
         Database::db_query(database, "INSERT INTO nationality (user_id, nation_id, rank, last_rank_update, joining_time) VALUES ('" + std::to_string(user_id) + "', '" + nation_id + "', '" + citizen + "', '" + now + "', '" + now + "')");
-        event.reply(dpp::message(flag + " You are now a citizen of " + display_name + ".").set_flags(dpp::m_ephemeral));
+        event.reply(dpp::message(":hammer_pick: You are now a citizen of " + display_name + ".").set_flags(dpp::m_ephemeral));
         inviter_id = invitation[0]["invited_by"];
     }
 
@@ -133,14 +132,14 @@ void Nation::join_nation
     const dpp::snowflake guild_id = event.command.guild_id;
     const dpp::snowflake role_id = dpp::snowflake(nations[0]["role_id"]);
 
-    bot.guild_member_add_role(guild_id, user_id, role_id, [&bot, &database, display_name, flag, guild_id, nation_id, role_id, user_id](const dpp::confirmation_callback_t &callback)
+    bot.guild_member_add_role(guild_id, user_id, role_id, [role_id, user_id](const dpp::confirmation_callback_t &callback)
     {
         if (callback.is_error())
             Logs::log("Warning: Failed to give role " + std::to_string(role_id) + " to " + std::to_string(user_id) + " with error " + callback.get_error().human_readable + " -> /nation join.");
     });
 
     ///////// e. /////////
-    Database::Output config = Database::db_query(database, "SELECT world_channel, flags_url FROM config LIMIT 1");
+    Database::Output config = Database::db_query(database, "SELECT world_channel FROM config LIMIT 1");
 
     if (config.size() == 0)
     {
@@ -149,7 +148,6 @@ void Nation::join_nation
     }
 
     const dpp::snowflake world_channel = dpp::snowflake(config[0]["world_channel"]);
-    const std::string flags_url = config[0]["flags_url"];
 
     ///////// f. /////////
     std::string was_invited;
@@ -168,7 +166,6 @@ void Nation::join_nation
     const dpp::embed embed = dpp::embed()
     .set_color(dpp::colors::light_green)
     .set_title("New Citizen")
-    .set_thumbnail(flags_url + nation_id + ".png")
     .set_description("<@" + std::to_string(user_id) + "> just received his citizenship from " + display_name + "." + was_invited);
 
     bot.message_create
