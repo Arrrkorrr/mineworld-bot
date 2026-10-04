@@ -28,7 +28,7 @@ DB_PASSWORD=database_password
 |  ├── world_channel BIGINT DEFAULT 0
 |  ├── journalism_channel BIGINT DEFAULT 0
 ├── Table "nations"
-|  ├── nation_id VARCHAR(50) PRIMARY KEY AUTO_INCREMENT
+|  ├── nation_id BIGINT PRIMARY KEY AUTO_INCREMENT
 |  ├── display_name VARCHAR(50) NOT NULL
 |  ├── description VARCHAR(500) DEFAULT "No description." NOT NULL
 |  ├── role_id BIGINT DEFAULT 0
