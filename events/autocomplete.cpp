@@ -17,7 +17,7 @@
 
     Parameters (variable_name / type / description):
         - bot       / dpp::cluster / Client of the bot with all related information.
-        - database  / MYSQL*       / Database used for the FSB bot and the MineWorld server.
+        - database  / MYSQL*       / MineWorld database
 
     Returns (type + description):
         No object returned.
@@ -37,9 +37,7 @@ void Events::autocomplete
             ////////////////// 3) //////////////////
             const std::string subcommand = event.options[0].name;
 
-            if (subcommand == "claim")
-                Autocomplete::empty_nations(bot, database, event);
-            else if (subcommand == "info" || subcommand == "join" || subcommand == "relation")
+            if (subcommand == "info" || subcommand == "join" || subcommand == "relation")
                 Autocomplete::nations(bot, database, event);
             else if (subcommand == "rank")
                 Autocomplete::ranks(bot, event);

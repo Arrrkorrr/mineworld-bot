@@ -25,6 +25,6 @@ void Events::message_create
     {
         ////////////////// 2) //////////////////
         if (event.msg.content == "<@1469410323776667679>")
-            event.reply(":wave: ФСБ is online and functioning!");
+            event.reply(":wave: The bot is online and functioning!");
     });
 }

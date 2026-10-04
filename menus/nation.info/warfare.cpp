@@ -15,7 +15,6 @@
         1) We do some verification.
             a. Verify that we can get some nation ID from the message content (4 "||" characters + at least one character).
             b. Verify that the nation exists.
-            c. Try to get some configuration from database.
         2) Process the menu display request.
             a. Try to get all citizens of the nation with the "Military" rank and format a list.
             b. Try to get the score and nation ID of the lowest relation available for this nation. We default to 50% if nothing comes out.
@@ -30,7 +29,7 @@
 
     Parameters (variable_name / type / description):
         - bot       / dpp::cluster        / Client of the bot with all related information.
-        - database  / MYSQL*              / Database used for the FSB bot and the MineWorld server.
+        - database  / MYSQL*              / MineWorld database
         - event     / dpp::select_click_t / All information about the event.
 
     Returns (type + description):
@@ -63,15 +62,6 @@ void NationInfo::warfare
         return;
     }
 
-    ///////// c. /////////
-    Database::Output config = Database::db_query(database, "SELECT flags_url FROM config LIMIT 1");
-
-    if (config.size() == 0)
-    {
-        event.reply(dpp::message(":prohibited: No configuration is available to find required display elements.").set_flags(dpp::m_ephemeral));
-        return;
-    }
-
     ////////////////// 2) //////////////////
     ///////// a. /////////
     Database::Output nation_military = Database::db_query(database, "SELECT user_id FROM nationality WHERE nation_id = '" + nation_id + "' AND rank = '" + std::to_string(MILITARY) + "'");
@@ -96,7 +86,6 @@ void NationInfo::warfare
     if (lowest.size() != 0)
     {
         const std::string target_nation_id = lowest[0]["targeted_nation"];
-        const std::string flag = Text::get_nation_flag(target_nation_id);
         const std::string score = lowest[0]["score"];
         std::string display_name = nation_id;
 
@@ -106,7 +95,7 @@ void NationInfo::warfare
         if (target_nation.size() != 0)
             display_name = target_nation[0]["display_name"];
 
-        lowest_relation = score + "% - " + flag + " " + display_name;
+        lowest_relation = score + "% - " + display_name;
     }
 
     ///////// d. /////////
@@ -116,7 +105,6 @@ void NationInfo::warfare
     if (highest.size() != 0)
     {
         const std::string target_nation_id = highest[0]["targeted_nation"];
-        const std::string flag = Text::get_nation_flag(target_nation_id);
         const std::string score = highest[0]["score"];
         std::string display_name = target_nation_id;
 
@@ -126,7 +114,7 @@ void NationInfo::warfare
         if (target_nation.size() != 0)
             display_name = target_nation[0]["display_name"];
 
-        highest_relation = score + "% - " + flag + " " + display_name;
+        highest_relation = score + "% - " + display_name;
     }
 
     ///////// f. /////////
@@ -141,8 +129,6 @@ void NationInfo::warfare
 
     ///////// h. /////////
     const std::string display_name = nations[0]["display_name"];
-    const std::string flags_url = config[0]["flags_url"];
-
     const std::string ideology = Text::get_ideology(std::stoi(nations[0]["ideology"]));
     const std::string nuclear_acquisition = (nations[0]["acquired_nuclear_time"] == "0" ? "Never" : "<t:" + nations[0]["acquired_nuclear_time"] + ":f>");
     const std::string nuclear_state = (nations[0]["nuclear_state"] == "0" ? "No" : "Yes");
@@ -151,10 +137,30 @@ void NationInfo::warfare
     const dpp::embed embed = dpp::embed()
     .set_color(dpp::colors::dark_green)
     .set_title(display_name)
-    .set_thumbnail(flags_url + nation_id + ".png")
-    .add_field(":military_helmet: Military Personnel", military + ".")
-    .add_field(":earth_africa: International Relations", "**Lowest relation**: " + lowest_relation + ".\n**Highest relation**: " + highest_relation + ".\n**Average relation score**: " + average_relation + ".\n*Keep in mind that only defined relations are counted.\nWe default to 50% if no data is available.*")
-    .add_field(":bar_chart: Data and Statistics", "**Ideology**: " + ideology + ".\n**Nuclear state**: " + nuclear_state + ".\n**Nuclear acquisition**: " + nuclear_acquisition + ".\n**Sanctions**: " + std::to_string(sanctions.size()) + ".")
+    .add_field
+    (
+        ":military_helmet: Military Personnel",
+        military + "."
+    )
+    .add_field
+    (
+        ":earth_africa: International Relations",
+
+        "**Lowest relation**: " + lowest_relation + ".\n" +
+        "**Highest relation**: " + highest_relation + ".\n" +
+        "**Average relation score**: " + average_relation + ".\n" +
+        "*Keep in mind that only defined relations are counted.\n" +
+        "We default to 50% if no data is available.*"
+    )
+    .add_field
+    (
+        ":bar_chart: Data and Statistics",
+
+        "**Ideology**: " + ideology + ".\n" +
+        "**Nuclear state**: " + nuclear_state + ".\n" +
+        "**Nuclear acquisition**: " + nuclear_acquisition + ".\n" +
+        "**Sanctions**: " + std::to_string(sanctions.size()) + "."
+    )
     .set_footer(dpp::embed_footer().set_icon(event.command.usr.get_avatar_url()).set_text("Requested by " + event.command.usr.username + "."));
 
     ///////// j. /////////

@@ -12,10 +12,9 @@
     Display the "Politics" menu of the /nation info command.
 
     Tasks:
-        1) We do some verification.
+        1) Do some verification.
             a. Verify that we can get some nation ID from the message content (4 "||" characters + at least one character).
             b. Verify that the nation exists.
-            c. Try to get some configuration from database.
         2) Process the menu display request.
             a. Try to get the Head of State and Prime Minister of the nation.
             b. Try to get all ministers of the nation and format a list.
@@ -27,7 +26,7 @@
 
     Parameters (variable_name / type / description):
         - bot       / dpp::cluster        / Client of the bot with all related information.
-        - database  / MYSQL*              / Database used for the FSB bot and the MineWorld server.
+        - database  / MYSQL*              / MineWorld database
         - event     / dpp::select_click_t / All information about the event.
 
     Returns (type + description):
@@ -56,16 +55,7 @@ void NationInfo::politics
 
     if (nations.size() == 0)
     {
-        event.reply(dpp::message(":prohibited: Nation `" + nation_id + "` does not exist.").set_flags(dpp::m_ephemeral));
-        return;
-    }
-
-    ///////// c. /////////
-    Database::Output config = Database::db_query(database, "SELECT flags_url FROM config LIMIT 1");
-
-    if (config.size() == 0)
-    {
-        event.reply(dpp::message(":prohibited: No configuration is available to find required display elements.").set_flags(dpp::m_ephemeral));
+        event.reply(dpp::message(":prohibited: Nation ID `" + nation_id + "` does not exist.").set_flags(dpp::m_ephemeral));
         return;
     }
 
@@ -121,8 +111,6 @@ void NationInfo::politics
 
     ///////// e. /////////
     const std::string display_name = nations[0]["display_name"];
-    const std::string flags_url = config[0]["flags_url"];
-
     const std::string freedom_rating = Text::get_media_freedom_rating(std::stoi(nations[0]["media_freedom"])) + " (" + nations[0]["media_freedom"] + "%)";
     const std::string government_type = Text::get_government_type(std::stoi(nations[0]["government_type"]));
     const std::string ideology = Text::get_ideology(std::stoi(nations[0]["ideology"]));
@@ -130,21 +118,56 @@ void NationInfo::politics
     const std::string join_condition = Text::get_join_condition(std::stoi(nations[0]["join_condition"]));
     const std::string last_leader = (nations[0]["last_leadership_change"] == "0" ? "Never" : "<t:" + nations[0]["last_leadership_change"] + ":f>");
     const std::string last_government = (nations[0]["last_government_change"] == "0" ? "Never" : "<t:" + nations[0]["last_government_change"] + ":f>");
-    const std::string leadership_changes = nations[0]["leadership_changes"];
-    const std::string government_changes = nations[0]["government_changes"];
-    const std::string tux_balance = nations[0]["tux_balance"];
 
     ///////// f. /////////
     const dpp::embed embed = dpp::embed()
     .set_color(dpp::colors::gold)
     .set_title(display_name)
-    .set_thumbnail(flags_url + nation_id + ".png")
-    .add_field(":classical_building: Government", "**Head of State:** " + leader + ".\n**Prime Minister**: " + prime_minister + ".\n**Ministry**: " + ministers + ".")
-    .add_field(":homes: Citizens of " + display_name, citizens + ".")
-    .add_field(":dart: Viewpoint", "**Government**: " + government_type + ".\n**Ideology**: " + ideology + ".\n**Freedom of speech**: " + freedom_rating + ".")
-    .add_field(":coin: Economy", "**Tux balance**: " + tux_balance + "Ť.\n**Trade sanctions**: " + std::to_string(economic_sanctions.size()) + ".\n**Fines**: " + std::to_string(fines.size()) + ".")
-    .add_field(":luggage: Immigration Laws", "**Join Condition**: " + join_condition + ".\n**Invitation Permission**: " + invite_permission + ".")
-    .add_field(":bar_chart: Statistics", "**Leader changes**: " + leadership_changes + ".\n**Last leader change**: " + last_leader + ".\n**Government changes**: " + government_changes + ".\n**Last government change**: " + last_government + ".")
+    .add_field
+    (
+        ":classical_building: Government",
+
+        "**Head of State:** " + leader + ".\n" +
+        "**Prime Minister**: " + prime_minister + ".\n" +
+        "**Ministry**: " + ministers + "."
+    )
+    .add_field
+    (
+        ":homes: Citizens of " + display_name,
+        citizens + "."
+    )
+    .add_field
+    (
+        ":dart: Viewpoint",
+
+        "**Government**: " + government_type + ".\n" +
+        "**Ideology**: " + ideology + ".\n" +
+        "**Freedom of speech**: " + freedom_rating + "."
+    )
+    .add_field
+    (
+        ":coin: Economy",
+
+        "**Tux balance**: " + nations[0]["tux_balance"] + "Ť.\n" +
+        "**Trade sanctions**: " + std::to_string(economic_sanctions.size()) + ".\n" +
+        "**Fines**: " + std::to_string(fines.size()) + "."
+    )
+    .add_field
+    (
+        ":luggage: Immigration Laws",
+
+        "**Join Condition**: " + join_condition + ".\n" +
+        "**Invitation Permission**: " + invite_permission + "."
+    )
+    .add_field
+    (
+        ":bar_chart: Statistics",
+
+        "**Leader changes**: " + nations[0]["leadership_changes"] + ".\n" +
+        "**Last leader change**: " + last_leader + ".\n" +
+        "**Government changes**: " + nations[0]["government_changes"] + ".\n" +
+        "**Last government change**: " + last_government + "."
+    )
     .set_footer(dpp::embed_footer().set_icon(event.command.usr.get_avatar_url()).set_text("Requested by " + event.command.usr.username + "."));
 
     ///////// g. /////////

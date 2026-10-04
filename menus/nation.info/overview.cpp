@@ -8,13 +8,12 @@
 #include <string>
 
 /*
-    Display the "Overview" menu of the /nation info command.
+    Display the "Overview" menu of the "/nation info" command.
 
     Tasks:
-        1) We do some verification.
+        1) Do some verification.
             a. Verify that we can get some nation ID from the message content (4 "||" characters + at least one character).
             b. Verify that the nation exists.
-            c. Try to get some configuration from database.
         2) Process the menu display request.
             a. Count the amount of members available for this nation ID.
             b. Prepare some information and statistics to display.
@@ -23,7 +22,7 @@
 
     Parameters (variable_name / type / description):
         - bot       / dpp::cluster        / Client of the bot with all related information.
-        - database  / MYSQL*              / Database used for the FSB bot and the MineWorld server.
+        - database  / MYSQL*              / MineWorld database
         - event     / dpp::select_click_t / All information about the event.
 
     Returns (type + description):
@@ -52,16 +51,7 @@ void NationInfo::overview
 
     if (nations.size() == 0)
     {
-        event.reply(dpp::message(":prohibited: Nation `" + nation_id + "` does not exist.").set_flags(dpp::m_ephemeral));
-        return;
-    }
-
-    ///////// c. /////////
-    Database::Output config = Database::db_query(database, "SELECT flags_url FROM config LIMIT 1");
-
-    if (config.size() == 0)
-    {
-        event.reply(dpp::message(":prohibited: No configuration is available to find required display elements.").set_flags(dpp::m_ephemeral));
+        event.reply(dpp::message(":prohibited: Nation ID `" + nation_id + "` does not exist.").set_flags(dpp::m_ephemeral));
         return;
     }
 
@@ -70,12 +60,8 @@ void NationInfo::overview
     Database::Output members = Database::db_query(database, "SELECT 1 FROM nationality WHERE nation_id = '" + nation_id + "'");
 
     ///////// b. /////////
+    const std::string creation_time = (nations[0]["creation_time"] == "0" ? "Never" : "<t:" + nations[0]["creation_time"] + ":f>");
     const std::string display_name = nations[0]["display_name"];
-    const std::string description = nations[0]["description"];
-    const std::string flags_url = config[0]["flags_url"];
-
-    const std::string claim_time = (nations[0]["claim_time"] == "0" ? "Never" : "<t:" + nations[0]["claim_time"] + ":f>");
-    const std::string flag = Text::get_nation_flag(nation_id);
     const std::string government_type = Text::get_government_type(std::stoi(nations[0]["government_type"]));
     const std::string ideology = Text::get_ideology(std::stoi(nations[0]["ideology"]));
     const std::string join_condition = Text::get_join_condition(std::stoi(nations[0]["join_condition"]));
@@ -85,9 +71,24 @@ void NationInfo::overview
     const dpp::embed embed = dpp::embed()
     .set_color(dpp::colors::cream_white)
     .set_title(display_name)
-    .set_thumbnail(flags_url + nation_id + ".png")
-    .add_field(":information_source: Description", description)
-    .add_field(":eye: Overview", "**Display Name**: " + display_name + ".\n**Nation ID**: " + nation_id + ".\n**Government**: " + government_type + ".\n**Ideology**: " + ideology + ".\n**Member count**: " + std::to_string(members.size()) + " member(s).\n**Flag**: " + flag + " ([download from server](" + flags_url + nation_id + ".png)).\n**Role**: " + role_id + ".\n**Became active**: " + claim_time + ".\n**Join condition**: " + join_condition + ".")
+    .add_field
+    (
+        ":information_source: Description",
+        nations[0]["description"]
+    )
+    .add_field
+    (
+        ":eye: Overview",
+
+        "**Display Name**: " + display_name + ".\n" +
+        "**Nation ID**: " + nation_id + ".\n" +
+        "**Government**: " + government_type + ".\n" +
+        "**Ideology**: " + ideology + ".\n" +
+        "**Member count**: " + std::to_string(members.size()) + " member(s).\n" +
+        "**Role**: " + role_id + ".\n" +
+        "**Became active**: " + creation_time + ".\n" +
+        "**Join condition**: " + join_condition + "."
+    )
     .set_footer(dpp::embed_footer().set_icon(event.command.usr.get_avatar_url()).set_text("Requested by " + event.command.usr.username + "."));
 
     ///////// d. /////////

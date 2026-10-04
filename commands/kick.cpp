@@ -59,7 +59,7 @@ void Commands::kick
     ///////// b. /////////
     if (user_id == bot.me.id)
     {
-        event.reply(dpp::message("<:putin_gun:1516736231357153491> ФСБ WILL NOT GO DOWN WITHOUT A FIGHT, СУКА!").set_flags(dpp::m_ephemeral));
+        event.reply(dpp::message("<:putin_gun:1516736231357153491> I WILL NOT GO DOWN WITHOUT A FIGHT!").set_flags(dpp::m_ephemeral));
         return;
     }
 
@@ -124,7 +124,7 @@ void Commands::kick
 
     if (!(bot_permissions & dpp::p_kick_members))
     {
-        event.reply(dpp::message(":prohibited: ФСБ does not have the required permissions to kick.").set_flags(dpp::m_ephemeral));
+        event.reply(dpp::message(":prohibited: I do not have the required permissions to kick.").set_flags(dpp::m_ephemeral));
         return;
     }
 
@@ -133,7 +133,7 @@ void Commands::kick
 
     if (bot_member_it == guild -> members.end())
     {
-        event.reply(dpp::message(":prohibited: Failed to find ФСБ in guild data.").set_flags(dpp::m_ephemeral));
+        event.reply(dpp::message(":prohibited: Failed to find the bot in guild data.").set_flags(dpp::m_ephemeral));
         return;
     }
 
@@ -143,7 +143,7 @@ void Commands::kick
 
     if (highest_member_role >= highest_bot_role)
     {
-        event.reply(dpp::message(":prohibited: ФСБ can not kick this member.").set_flags(dpp::m_ephemeral));
+        event.reply(dpp::message(":prohibited: I can not kick this member.").set_flags(dpp::m_ephemeral));
         return;
     }
 

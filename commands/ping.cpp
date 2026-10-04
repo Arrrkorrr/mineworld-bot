@@ -45,5 +45,5 @@ void Commands::ping
         return;
     }
 
-    event.reply(dpp::message(":ping_pong: ФСБ latency: " + std::to_string((int)latency) + "ms.").set_flags(dpp::m_ephemeral));
+    event.reply(dpp::message(":ping_pong: Bot latency: " + std::to_string((int)latency) + "ms.").set_flags(dpp::m_ephemeral));
 }

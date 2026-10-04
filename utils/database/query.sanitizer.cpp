@@ -11,7 +11,7 @@
         2) Use MySQL built-in fuction to sanitize and resize the output to the sanitized length.
 
     Parameters (variable_name / type / description):
-        - database / MYSQL* / Database used for the FSB bot and the MineWorld server.
+        - database / MYSQL* / MineWorld database
         - input    / string / Data to sanitize.
 
     Returns (type + description):

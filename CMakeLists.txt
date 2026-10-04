@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-project(fsb)
+project(bot)
 set(CMAKE_CXX_STANDARD 17)
 
 include_directories (
@@ -53,14 +53,14 @@ set(ALL_SOURCES
     ${UTILS_TEXT}
 )
 
-add_executable(fsb ${ALL_SOURCES})
+add_executable(bot ${ALL_SOURCES})
 
 add_custom_target(copy_binaries ALL
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_SOURCE_DIR}/bin/libdpp.so.10.1.5" "${CMAKE_SOURCE_DIR}/build/out/libdpp.so.10.1.5"
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_SOURCE_DIR}/bin/libdpp.so.10.1.6" "${CMAKE_SOURCE_DIR}/build/out/libdpp.so.10.1.6"
     COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_SOURCE_DIR}/bin/libmariadb.so.3" "${CMAKE_SOURCE_DIR}/build/out/libmariadb.so.3"
 )
 
-target_link_libraries(fsb PRIVATE
-    ${CMAKE_SOURCE_DIR}/bin/libdpp.so.10.1.5
+target_link_libraries(bot PRIVATE
+    ${CMAKE_SOURCE_DIR}/bin/libdpp.so.10.1.6
     ${CMAKE_SOURCE_DIR}/bin/libmariadb.so.3
 )

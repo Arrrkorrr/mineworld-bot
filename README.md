@@ -1,5 +1,5 @@
-# FSB - Discord bot
-Source code of FSB, a private Discord bot. <br/>
+# MineWorld - Discord bot
+Source code of MineWorld, a private Discord bot. <br/>
 This project is based on the [D++ library](https://github.com/brainboxdotcc/DPP). <br/>
 Discord server using the bot: https://discord.gg/zkJ75UDVEV. <br/>
 
@@ -8,10 +8,10 @@ Discord server using the bot: https://discord.gg/zkJ75UDVEV. <br/>
 - MariaDB server.
 
 # ⚙️ Configuration
-In the `./config` server, you must create the file `fsb.config` and set the following config in there. <br/>
+In the `./config` server, you must create the file `bot.config` and set the following config in there. <br/>
 ``` config
 TOKEN=bot_token_here
-DB_NAME=fsb
+DB_NAME=mineworld
 DB_HOST=database_address
 DB_PORT=database_port
 DB_USER=database_username
@@ -20,7 +20,7 @@ DB_PASSWORD=database_password
 
 # 🖥️ Database setup
 ``` sql
-- Database "fsb"
+- Database "mineworld"
 ├── Table "config"
 |  ├── member_role BIGINT DEFAULT 0
 |  ├── welcome_channel BIGINT DEFAULT 0
@@ -28,13 +28,13 @@ DB_PASSWORD=database_password
 |  ├── world_channel BIGINT DEFAULT 0
 |  ├── journalism_channel BIGINT DEFAULT 0
 ├── Table "nations"
-|  ├── nation_id VARCHAR(50) PRIMARY KEY NOT NULL
+|  ├── nation_id VARCHAR(50) PRIMARY KEY AUTO_INCREMENT
 |  ├── display_name VARCHAR(50) NOT NULL
 |  ├── description VARCHAR(500) DEFAULT "No description." NOT NULL
 |  ├── role_id BIGINT DEFAULT 0
 |  ├── join_condition TINYINT DEFAULT 1
 |  ├── invite_permission TINYINT DEFAULT 0
-|  ├── claim_time BIGINT DEFAULT (UNIX_TIMESTAMP()) NOT NULL
+|  ├── creation_time BIGINT DEFAULT (UNIX_TIMESTAMP()) NOT NULL
 |  ├── tux_balance BIGINT DEFAULT 0
 |  ├── government_type TINYINT DEFAULT 0
 |  ├── ideology TINYINT DEFAULT 8
@@ -93,7 +93,7 @@ DB_PASSWORD=database_password
 |  ├── nation_id VARCHAR(50) NOT NULL
 |  ├── law_title VARCHAR(100) NOT NULL
 |  ├── law_details VARCHAR(500) NOT NULL
-|  ├── law_adoption_time BIGINT DEFAULT 0 
+|  ├── law_adoption_time BIGINT DEFAULT 0
 |  ├── vote_start BIGINT DEFAULT (UNIX_TIMESTAMP()) NOT NULL
 |  ├── vote_duration VARCHAR(3) NOT NULL
 |  ├── vote_end BIGINT NOT NULL
@@ -122,7 +122,7 @@ DB_PASSWORD=database_password
 
 # 📥 Installation
 1) Download the project. <br/>
-2) Set the `fsb.config` file. <br/>
+2) Set the `bot.config` file. <br/>
 3) Build and run using the `build.sh` script. <br/>
 4) Enjoy! <br/>
 

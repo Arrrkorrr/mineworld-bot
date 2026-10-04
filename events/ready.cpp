@@ -15,7 +15,7 @@
         3) Set the bot dynamic bot status and log the successful start.
 
     Parameters:
-        - bot / dpp::cluster / FSB client data.
+        - bot / dpp::cluster / Client of the bot with all related information.
 
     Returns:
         No object returned.
@@ -38,7 +38,6 @@ void Events::ready
             //////////////////////////////////////
             ///////// Command /alliance. /////////
             //////////////////////////////////////
-
             dpp::slashcommand alliance_command("alliance", "Commands related to alliances.", bot.me.id);
 
                 ///// Subcommand /alliance config. /////
@@ -174,10 +173,13 @@ void Events::ready
                 dpp::command_option nation_config(dpp::co_sub_command, "config", "Edit the configuration of your nation.");
                 nation_command.add_option(nation_config);
 
-                ///// Subcommand /nation claim. /////
-                dpp::command_option nation_claim(dpp::co_sub_command, "claim", "Claim an empty nation.");
-                nation_claim.add_option(dpp::command_option(dpp::co_string, "nation_id", "ID of the nation.", true).set_auto_complete(true));
-                nation_command.add_option(nation_claim);
+                ///// Subcommand /nation create. /////
+                dpp::command_option nation_create(dpp::co_sub_command, "create", "Create a new nation.");
+                nation_create.add_option(dpp::command_option(dpp::co_string, "display_name", "Name of your nation.", true));
+                nation_create.add_option(dpp::command_option(dpp::co_string, "description", "Description of the nation.", true));
+                nation_create.add_option(dpp::command_option(dpp::co_integer, "government_type", "Type of government.", true).set_auto_complete(true));
+                nation_create.add_option(dpp::command_option(dpp::co_integer, "ideology", "Ideology of the nation.", true).set_auto_complete(true));
+                nation_command.add_option(nation_create);
 
                 ///// Subcommand /nation info. /////
                 dpp::command_option nation_info(dpp::co_sub_command, "info", "Get information about a nation.");
@@ -325,18 +327,13 @@ void Events::ready
 	    const std::vector<std::string> status =
 	    {
             "Beta 3.0 is live, run /play!",
-            "Spying on you.",
-            "Obey and you will not get deported.",
-            "Monitoring global economy.",
-            "Reporting bad behavior.",
-            "Enforcing order worldwide.",
-            "Reviewing classified documents.",
-            "Closely surveilling AwesomePhoenix.",
-            "Eliminating opposition.",
-            "Deporting cheaters/troublemakers.",
-            "Providing intel to Mossad.",
-            "Censoring West propaganda.",
-            "Enforcing sanctions."
+            "Our website is now available! https://mineworld.apkop.eu/",
+            "Surveilling AwesomePhoenix.",
+            "Maintaining order.",
+            "Monitoring world economy.",
+            "Looking for UN resolutions.",
+            "Checking for server updates.",
+            "Reviewing journalists posts."
         };
 
         int index = 0;
@@ -352,5 +349,5 @@ void Events::ready
         }, 4);
     });
 
-    Logs::log("ФСБ successfully booted up and deployed slash commands!");
+    Logs::log("The bot successfully booted up and deployed slash commands!");
 }

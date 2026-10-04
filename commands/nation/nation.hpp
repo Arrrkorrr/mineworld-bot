@@ -7,10 +7,10 @@
 namespace Nation
 {
     ////////////////////////////
-    ///// nation.claim.cpp /////
+    ///// nation.create.cpp /////
     ////////////////////////////
 
-    void claim_nation
+    void nation_create
     (
         dpp::cluster                    &bot,
         MYSQL*                          &database,

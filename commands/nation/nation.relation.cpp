@@ -29,7 +29,7 @@
 
     Parameters (variable_name / type / description):
         - bot       / dpp::cluster              / Client of the bot with all related information.
-        - database  / MYSQL*                    / Database used for the FSB bot and the MineWorld server.
+        - database  / MYSQL*                    / MineWorld database
         - event     / dpp::interaction_create_t / All information about the event.
 
     Returns (type + description):
@@ -121,17 +121,14 @@ void Nation::nation_relation
     const std::string emoji = (increased ? ":arrow_up:" : ":arrow_down:");
     const std::string verb = (increased ? "improved" : "degraded");
 
-    const std::string nation_flag = Text::get_nation_flag(nation_id);
-    const std::string target_flag = Text::get_nation_flag(target_id);
-
     if (nation_query.size() == 0)
         Database::db_query(database, "INSERT INTO relations (defining_nation, targeted_nation, score) VALUES ('" + nation_id + "', '" + target_id + "', '" + std::to_string(score) + "')");
     else Database::db_query(database, "UPDATE relations SET score = '" + std::to_string(score) + "' WHERE defining_nation = '" + nation_id + "' AND targeted_nation = '" + target_id + "'");
 
-    event.reply(dpp::message(emoji + " The relation between " + display_name + " and " + target_name + " has officially " + verb + ".\n- Before: " + current_rating + " (" + std::to_string(current_relation) + "% - " + nation_flag + " " + std::to_string(nation_relation) + "%, " + target_flag + " " + std::to_string(target_relation) + "%).\n- After: " + new_rating + " (" + std::to_string(new_relation) + "% - " + nation_flag + " " + std::to_string(score) + "%, " + target_flag + " " + std::to_string(target_relation) + "%).").set_flags(dpp::m_ephemeral));
+    event.reply(dpp::message(emoji + " The relation between " + display_name + " and " + target_name + " has officially " + verb + ".\n- Before: " + current_rating + " (" + std::to_string(current_relation) + "% - " + std::to_string(nation_relation) + "%, " + std::to_string(target_relation) + "%).\n- After: " + new_rating + " (" + std::to_string(new_relation) + "% - " + std::to_string(score) + "%, " + std::to_string(target_relation) + "%).").set_flags(dpp::m_ephemeral));
 
     ///////// d. /////////
-    Database::Output config = Database::db_query(database, "SELECT world_channel, flags_url FROM config LIMIT 1");
+    Database::Output config = Database::db_query(database, "SELECT world_channel FROM config LIMIT 1");
 
     if (config.size() == 0)
     {
@@ -140,7 +137,6 @@ void Nation::nation_relation
     }
 
     const dpp::snowflake world_channel = dpp::snowflake(config[0]["world_channel"]);
-    const std::string flags_url = config[0]["flags_url"];
 
     ///////// e. /////////
     const dpp::snowflake guild_id = event.command.guild_id;
@@ -149,7 +145,6 @@ void Nation::nation_relation
     const dpp::embed embed = dpp::embed()
     .set_color(color)
     .set_title("Relation Updated")
-    .set_thumbnail(flags_url + nation_id + ".png")
     .set_description("The relation between " + display_name + " and " + target_name + " has " + verb + " from " + current_rating + " (" + std::to_string(current_relation) + "%) to " + new_rating + " (" + std::to_string(new_relation) + "%)!");
 
     bot.message_create
