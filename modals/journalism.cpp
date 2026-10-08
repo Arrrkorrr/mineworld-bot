@@ -2,6 +2,7 @@
 
 #include "../utils/database/database.hpp"
 #include "../utils/miscellaneous/miscellaneous.hpp"
+#include "../utils/text/text.hpp"
 
 #include <algorithm>
 #include <dpp/dpp.h>
@@ -58,7 +59,7 @@ void Modals::journalism
 
     ///////// b. ////////
     const std::string nation_id = nationality[0]["nation_id"];
-    Database::Output nations = Database::db_query(database, "SELECT display_name, media_blacklist, media_whitelist, media_posts, censored_posts, media_freedom FROM nations WHERE nation_id = '" + nation_id + "' LIMIT 1");
+    Database::Output nations = Database::db_query(database, "SELECT display_name, government_type, media_blacklist, media_whitelist, media_posts, censored_posts, media_freedom FROM nations WHERE nation_id = '" + nation_id + "' LIMIT 1");
 
     if (nations.size() == 0)
     {
@@ -79,11 +80,12 @@ void Modals::journalism
     const std::string now = std::to_string(Miscellaneous::get_current_timestamp());
     const std::string censored_posts = std::to_string(std::stoll(nations[0]["censored_posts"]) + 1);
     const std::string display_name = nations[0]["display_name"];
+    const std::string government_type = Text::get_government_type(std::stoi(nations[0]["government_type"]));
 
     if (whitelist == "1" && user_status != 0)
     {
         Database::db_query(database, "UPDATE nations SET media_posts = '" + media_posts + "', censored_posts = '" + censored_posts + "', last_a_censorship = '" + now + "' WHERE nation_id = '" + nation_id + "'");
-        return event.reply(dpp::message(":prohibited: Your post has been **automatically censored** by the government of " + display_name + ".").set_flags(dpp::m_ephemeral));;
+        return event.reply(dpp::message(":prohibited: Your post has been **automatically censored** by the government of the " + government_type + " of " + display_name + ".").set_flags(dpp::m_ephemeral));;
     }
 
     ///////// e. /////////
@@ -95,7 +97,7 @@ void Modals::journalism
         const std::string new_media_freedom = std::to_string(std::clamp(media_freedom - 1, 0, 100));
 
         Database::db_query(database, "UPDATE nations SET media_freedom = '" + new_media_freedom + "', media_posts = '" + media_posts + "', censored_posts = '" + censored_posts + "', last_a_censorship = '" + now + "' WHERE nation_id = '" + nation_id + "'");
-        return event.reply(dpp::message(":prohibited: Your post has been **automatically censored** by the government of " + display_name + ".").set_flags(dpp::m_ephemeral));;
+        return event.reply(dpp::message(":prohibited: Your post has been **automatically censored** by the government of the " + government_type + " of " + display_name + ".").set_flags(dpp::m_ephemeral));;
     }
 
     ////////////////// 3) //////////////////
@@ -106,13 +108,12 @@ void Modals::journalism
     Database::db_query(database, "UPDATE nations SET media_freedom = '" + new_media_freedom + "', media_posts = '" + media_posts + "', last_post = '" + now + "' WHERE nation_id = '" + nation_id + "'");
 
     ///////// b. /////////
-
     const dpp::embed embed = dpp::embed()
     .set_color(dpp::colors::cream_white)\
     .set_description(article_content)
     .set_thumbnail(top_image_url)
     .set_image(bottom_image_url)
-    .set_footer(dpp::embed_footer().set_text("Published by " + event.command.usr.username + " from " + display_name + "."));
+    .set_footer(dpp::embed_footer().set_text("Published by " + event.command.usr.username + " from the " + government_type + " of " + display_name + "."));
 
     const dpp::component buttons = dpp::component()
     .add_component (
@@ -160,5 +161,5 @@ void Modals::journalism
     }
 
     bot.message_create(dpp::message(journalism_channel, "||" + std::to_string(user_id) + "." + nation_id + "||").add_embed(embed).add_component(buttons));
-    event.reply(dpp::message(":newspaper: Your post has been published from " + display_name + " in <#" + std::to_string(journalism_channel) + ">.").set_flags(dpp::m_ephemeral));
+    event.reply(dpp::message(":newspaper: Your post has been published from the " + government_type + " of " + display_name + " in <#" + std::to_string(journalism_channel) + ">.").set_flags(dpp::m_ephemeral));
 }

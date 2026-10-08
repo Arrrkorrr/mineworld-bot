@@ -6,7 +6,6 @@ USE mineworld;
 CREATE TABLE config (
     member_role BIGINT DEFAULT 0,
     welcome_channel BIGINT DEFAULT 0,
-    flags_url TEXT DEFAULT '',
     world_channel BIGINT DEFAULT 0,
     journalism_channel BIGINT DEFAULT 0
 );

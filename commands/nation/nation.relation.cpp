@@ -48,7 +48,7 @@ void Nation::nation_relation
     const int64_t score = std::clamp(std::get<int64_t>(event.get_parameter("score")), 0L, 100L);
 
     target_id = Database::sanitize_input(database, target_id);
-    Database::Output target = Database::db_query(database, "SELECT display_name FROM nations WHERE nation_id = '" + target_id + "' LIMIT 1");
+    Database::Output target = Database::db_query(database, "SELECT display_name, government_type FROM nations WHERE nation_id = '" + target_id + "' LIMIT 1");
 
     if (target.size() == 0)
     {
@@ -68,7 +68,7 @@ void Nation::nation_relation
 
     ///////// c. /////////
     const std::string nation_id = nationality[0]["nation_id"];
-    Database::Output nations = Database::db_query(database, "SELECT display_name FROM nations WHERE nation_id = '" + nation_id + "' LIMIT 1");
+    Database::Output nations = Database::db_query(database, "SELECT display_name, government_type FROM nations WHERE nation_id = '" + nation_id + "' LIMIT 1");
 
     if (nations.size() == 0)
     {
@@ -78,20 +78,22 @@ void Nation::nation_relation
 
     ///////// d. /////////
     const std::string display_name = nations[0]["display_name"];
+    const std::string government_type = Text::get_government_type(std::stoi(nations[0]["government_type"]));
 
     if (nation_id == target_id)
     {
-        event.reply(dpp::message(":prohibited: You can not change the relation of " + display_name + " with itself.").set_flags(dpp::m_ephemeral));
+        event.reply(dpp::message(":prohibited: You can not change the relation of the " + government_type + " of " + display_name + " with itself.").set_flags(dpp::m_ephemeral));
         return;
     }
 
     ///////// e. /////////
     const int rank = std::stoi(nationality[0]["rank"]);
     const std::string target_name = target[0]["display_name"];
+    const std::string target_gov_type = Text::get_government_type(std::stoi(target[0]["government_type"]));
 
     if (rank < MINISTER)
     {
-        event.reply(dpp::message(":prohibited: You must be a government official of " + display_name + " to update the relation score with " + target_name + ".").set_flags(dpp::m_ephemeral));
+        event.reply(dpp::message(":prohibited: You must be a government official of the " + government_type + " of " + display_name + " to update the relation score with the " + target_gov_type + " of " + target_name + ".").set_flags(dpp::m_ephemeral));
         return;
     }
 
@@ -125,7 +127,7 @@ void Nation::nation_relation
         Database::db_query(database, "INSERT INTO relations (defining_nation, targeted_nation, score) VALUES ('" + nation_id + "', '" + target_id + "', '" + std::to_string(score) + "')");
     else Database::db_query(database, "UPDATE relations SET score = '" + std::to_string(score) + "' WHERE defining_nation = '" + nation_id + "' AND targeted_nation = '" + target_id + "'");
 
-    event.reply(dpp::message(emoji + " The relation between " + display_name + " and " + target_name + " has officially " + verb + ".\n- Before: " + current_rating + " (" + std::to_string(current_relation) + "% - " + std::to_string(nation_relation) + "%, " + std::to_string(target_relation) + "%).\n- After: " + new_rating + " (" + std::to_string(new_relation) + "% - " + std::to_string(score) + "%, " + std::to_string(target_relation) + "%).").set_flags(dpp::m_ephemeral));
+    event.reply(dpp::message(emoji + " The relation between the " + government_type + " of " + display_name + " and the " + target_gov_type + " of " + target_name + " has officially " + verb + ".\n- Before: " + current_rating + " (" + std::to_string(current_relation) + "% - " + std::to_string(nation_relation) + "%, " + std::to_string(target_relation) + "%).\n- After: " + new_rating + " (" + std::to_string(new_relation) + "% - " + std::to_string(score) + "%, " + std::to_string(target_relation) + "%).").set_flags(dpp::m_ephemeral));
 
     ///////// d. /////////
     Database::Output config = Database::db_query(database, "SELECT world_channel FROM config LIMIT 1");
@@ -145,7 +147,7 @@ void Nation::nation_relation
     const dpp::embed embed = dpp::embed()
     .set_color(color)
     .set_title("Relation Updated")
-    .set_description("The relation between " + display_name + " and " + target_name + " has " + verb + " from " + current_rating + " (" + std::to_string(current_relation) + "%) to " + new_rating + " (" + std::to_string(new_relation) + "%)!");
+    .set_description("The relation between the " + government_type + " of " + display_name + " and the " + target_gov_type + " of" + target_name + " has " + verb + " from " + current_rating + " (" + std::to_string(current_relation) + "%) to " + new_rating + " (" + std::to_string(new_relation) + "%)!");
 
     bot.message_create
     (

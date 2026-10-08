@@ -53,7 +53,7 @@ void Nation::nation_create
 
     ///////// b. /////////
     const std::string lowercase = Text::to_lowercase(display_name);
-    Database::Output nations = Database::db_query(database, "SELECT 1 FROM nations WHERE LOWER(display_name) = '" + lowercase + "' OR lowercase_name = '" + lowercase + "' LIMIT 1");
+    Database::Output nations = Database::db_query(database, "SELECT 1 FROM nations WHERE LOWER(display_name) = '" + lowercase + "' LIMIT 1");
 
     if (nations.size() != 0)
     {
@@ -69,7 +69,7 @@ void Nation::nation_create
     {
         ///////// d. /////////
         const std::string current_nation_id = nationality[0]["nation_id"];
-        Database::Output current = Database::db_query(database, "SELECT display_name FROM nations WHERE nation_id = '" + current_nation_id + "' LIMIT 1");
+        Database::Output current = Database::db_query(database, "SELECT display_name, government_type FROM nations WHERE nation_id = '" + current_nation_id + "' LIMIT 1");
 
         if (current.size() == 0)
         {
@@ -78,9 +78,10 @@ void Nation::nation_create
         }
 
         const std::string current_name = current[0]["display_name"];
+        const std::string government_type = Text::get_government_type(std::stoi(current[0]["government_type"]));
         const std::string rank = Text::get_rank(std::stoi(nationality[0]["rank"]));
 
-        return event.reply(dpp::message(":prohibited: You are already part of " + current_name + " as " + rank + ".").set_flags(dpp::m_ephemeral));
+        return event.reply(dpp::message(":prohibited: You are already part of the " + government_type + " of " + current_name + " as " + rank + ".").set_flags(dpp::m_ephemeral));
     }
 
     ////////////////// 2) //////////////////
@@ -97,11 +98,12 @@ void Nation::nation_create
     }
 
     ///////// b. /////////
+    const std::string government_type = Text::get_government_type(gov_type);
     const std::string nation_id = created_nation[0]["nation_id"];
     const std::string leader = std::to_string(LEADER);
 
     Database::db_query(database, "INSERT INTO nationality (user_id, nation_id, rank, last_rank_update, joining_time) VALUES ('" + std::to_string(user_id) + "', '" + nation_id + "', '" + leader + "', '" + now + "', '" + now + "')");
-    event.reply(dpp::message(":military_medal: You are now the Head of State of " + display_name + ".").set_flags(dpp::m_ephemeral));
+    event.reply(dpp::message(":military_medal: You are now the Head of State of the " + government_type + " of " + display_name + ".").set_flags(dpp::m_ephemeral));
 
     ///////// c. /////////
     const dpp::snowflake guild_id = event.command.guild_id;
@@ -127,7 +129,7 @@ void Nation::nation_create
     });
 
     ///////// e. /////////
-    Database::Output config = Database::db_query(database, "SELECT world_channel, flags_url FROM config LIMIT 1");
+    Database::Output config = Database::db_query(database, "SELECT world_channel FROM config LIMIT 1");
 
     if (config.size() == 0)
     {
@@ -141,7 +143,7 @@ void Nation::nation_create
     const dpp::embed embed = dpp::embed()
     .set_color(dpp::colors::light_green)
     .set_title("New Nation")
-    .set_description("Stateless <@" + std::to_string(user_id) + "> created and took the leadership of " + display_name + ".");
+    .set_description("Stateless <@" + std::to_string(user_id) + "> created and took the leadership of the " + government_type + " of " + display_name + " that advocates " + Text::get_ideology(ideology) + ".");
 
     bot.message_create
     (

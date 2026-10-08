@@ -22,7 +22,7 @@
             e. Verify that the targeted user is not stateless.
             f. Verify that both the executer and user are part of the same nation.
             g. Verify that the user does not already have the rank to give.
-            h. Verify that the executer is not trying to give their own rank (except if they are the Head of State and trying to transfert leadership).
+            h. Verify that the executer is not trying to give their own rank (except if they are the Head of State and trying to transfer leadership).
             i. Verify that the executer is not trying to give a rank that is higher than theirs.
             j. Verify that the executer and user ranks do not match.
             k. Verify that the executer rank is higher than the user rank.
@@ -78,7 +78,7 @@ void Nation::nation_rank
 
     ///////// d. /////////
     const std::string executer_nation_id = executer_nationality[0]["nation_id"];
-    Database::Output nations = Database::db_query(database, "SELECT display_name, leadership_changes, government_changes FROM nations WHERE nation_id = '" + executer_nation_id + "' LIMIT 1");
+    Database::Output nations = Database::db_query(database, "SELECT display_name, government_type, leadership_changes, government_changes FROM nations WHERE nation_id = '" + executer_nation_id + "' LIMIT 1");
 
     if (nations.size() == 0)
     {
@@ -89,12 +89,13 @@ void Nation::nation_rank
     ///////// e. /////////
     Database::Output user_nationality = Database::db_query(database, "SELECT nation_id, rank FROM nationality WHERE user_id = '" + std::to_string(user_id) + "' LIMIT 1");
 
-    const std::string rank_name = Text::get_rank(new_rank);
     const std::string display_name = nations[0]["display_name"];
+    const std::string government_type = Text::get_government_type(std::stoi(nations[0]["government_type"]));
+    const std::string rank_name = Text::get_rank(new_rank);
 
     if (user_nationality.size() == 0)
     {
-        event.reply(dpp::message(":prohibited: You can not set the rank of <@" + std::to_string(user_id) + "> to " + rank_name + " of " + display_name + " as they are stateless.").set_flags(dpp::m_ephemeral));
+        event.reply(dpp::message(":prohibited: You can not set the rank of <@" + std::to_string(user_id) + "> to " + rank_name + " of the " + government_type + " of " + display_name + " as they are stateless.").set_flags(dpp::m_ephemeral));
         return;
     }
 
@@ -109,11 +110,11 @@ void Nation::nation_rank
         if (user_nation.size() == 0)
         {
             Logs::log("Warning: Nation ID " + user_nation_id + " missing in database -> /nation rank.");
-            return event.reply(dpp::message(":prohibited: You can not set the rank of <@" + std::to_string(user_id) + "> to " + rank_name + " of " + display_name + " as they are part of another nation as " + user_rank + ".").set_flags(dpp::m_ephemeral));
+            return event.reply(dpp::message(":prohibited: You can not set the rank of <@" + std::to_string(user_id) + "> to " + rank_name + " of the " + government_type + " of " + display_name + " as they are part of another nation as " + user_rank + ".").set_flags(dpp::m_ephemeral));
         }
 
         const std::string nation_name = user_nation[0]["display_name"];
-        return event.reply(dpp::message(":prohibited: You can not set the rank of <@" + std::to_string(user_id) + "> to " + rank_name + " of " + display_name + " as they are part of " + nation_name + " as " + user_rank + ".").set_flags(dpp::m_ephemeral));
+        return event.reply(dpp::message(":prohibited: You can not set the rank of <@" + std::to_string(user_id) + "> to " + rank_name + " of the " + government_type + " of " + display_name + " as they are part of " + nation_name + " as " + user_rank + ".").set_flags(dpp::m_ephemeral));
     }
 
     ///////// g. /////////
@@ -131,7 +132,7 @@ void Nation::nation_rank
 
     if (new_rank == executer_rank && new_rank != LEADER)
     {
-        event.reply(dpp::message(":prohibited: You can not set the rank of " + user_rank_name + " <@" + std::to_string(user_id) + "> to " + rank_name + " of " + display_name + " as the new rank is your current rank.").set_flags(dpp::m_ephemeral));
+        event.reply(dpp::message(":prohibited: You can not set the rank of " + user_rank_name + " <@" + std::to_string(user_id) + "> to " + rank_name + " of the " + government_type + " of " + display_name + " as the new rank is your current rank.").set_flags(dpp::m_ephemeral));
         return;
     }
 
@@ -140,21 +141,21 @@ void Nation::nation_rank
 
     if (new_rank > executer_rank)
     {
-        event.reply(dpp::message(":prohibited: You can not set the rank of " + user_rank_name + " <@" + std::to_string(user_id) + "> to " + rank_name + " of " + display_name + " as the new rank is higher than yours (" + rank_name + " > " + executer_rank_name + ").").set_flags(dpp::m_ephemeral));
+        event.reply(dpp::message(":prohibited: You can not set the rank of " + user_rank_name + " <@" + std::to_string(user_id) + "> to " + rank_name + " of the " + government_type + " of " + display_name + " as the new rank is higher than yours (" + rank_name + " > " + executer_rank_name + ").").set_flags(dpp::m_ephemeral));
         return;
     }
 
     ///////// j. /////////
     if (user_rank == executer_rank)
     {
-        event.reply(dpp::message(":prohibited: You can not set the rank of " + user_rank_name + " <@" + std::to_string(user_id) + "> to " + rank_name + " of " + display_name + " as you both have the " + executer_rank_name + ".").set_flags(dpp::m_ephemeral));
+        event.reply(dpp::message(":prohibited: You can not set the rank of " + user_rank_name + " <@" + std::to_string(user_id) + "> to " + rank_name + " of the " + government_type + " of " + display_name + " as you both have the " + executer_rank_name + ".").set_flags(dpp::m_ephemeral));
         return;
     }
 
     ///////// k. /////////
     if (user_rank > executer_rank)
     {
-        event.reply(dpp::message(":prohibited: You can not set the rank of " + user_rank_name +  " <@" + std::to_string(user_id) + "> to " + rank_name + " of " + display_name + " as they have a higher rank than you (" + user_rank_name + " > " + executer_rank_name + ").").set_flags(dpp::m_ephemeral));
+        event.reply(dpp::message(":prohibited: You can not set the rank of " + user_rank_name +  " <@" + std::to_string(user_id) + "> to " + rank_name + " of the " + government_type + " of " + display_name + " as they have a higher rank than you (" + user_rank_name + " > " + executer_rank_name + ").").set_flags(dpp::m_ephemeral));
         return;
     }
 
@@ -166,7 +167,7 @@ void Nation::nation_rank
     const std::string emoji = (promotion ? ":arrow_up:" : ":arrow_down:");
     const std::string verb = (promotion ? "promoted" : "demoted");
 
-    event.reply(dpp::message(emoji + " <@" + std::to_string(user_id) + "> has been " + verb + " from " + user_rank_name + " to " + rank_name + " of " + display_name + ".").set_flags(dpp::m_ephemeral));
+    event.reply(dpp::message(emoji + " <@" + std::to_string(user_id) + "> has been " + verb + " from " + user_rank_name + " to " + rank_name + " of the " + government_type + " of " + display_name + ".").set_flags(dpp::m_ephemeral));
 
     ///////// b. /////////
     const std::string leadership_changes = std::to_string(std::stoi(nations[0]["leadership_changes"]) + 1);
@@ -213,13 +214,13 @@ void Nation::nation_rank
     {
         embed.set_color(dpp::colors::gold)
         .set_title("Leadership Change")
-        .set_description("Head of State <@" + std::to_string(executer_id) + "> of " + display_name + " resigned from their functions and named " + user_rank_name + " <@" + std::to_string(user_id) + "> as their successor.");
+        .set_description("The Head of State <@" + std::to_string(executer_id) + "> of the " + government_type + " of " + display_name + " resigned from their functions and named " + user_rank_name + " <@" + std::to_string(user_id) + "> as their successor.");
     }
     else if (new_rank == PRIME_MINISTER)
     {
         embed.set_color(dpp::colors::gold)
         .set_title("Prime Minister Change")
-        .set_description("Head of State <@" + std::to_string(executer_id) + "> named " + user_rank_name + " <@" + std::to_string(user_id) + "> as the new Prime Minister of " + display_name + ".");
+        .set_description("The Head of State <@" + std::to_string(executer_id) + "> named " + user_rank_name + " <@" + std::to_string(user_id) + "> as the new Prime Minister of the " + government_type + " of " + display_name + ".");
     }
     else
     {
@@ -227,7 +228,7 @@ void Nation::nation_rank
 
         embed.set_color(color)
         .set_title("Rank Modification")
-        .set_description(executer_rank_name + " <@" + std::to_string(executer_id) + "> just " + verb + " " + user_rank_name + " <@" + std::to_string(user_id) + "> to " + rank_name + " of " + display_name + ".");
+        .set_description(executer_rank_name + " <@" + std::to_string(executer_id) + "> just " + verb + " " + user_rank_name + " <@" + std::to_string(user_id) + "> to " + rank_name + " of the " + government_type + " of " + display_name + ".");
     }
 
     bot.message_create

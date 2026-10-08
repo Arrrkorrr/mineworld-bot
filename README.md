@@ -24,7 +24,6 @@ DB_PASSWORD=database_password
 ├── Table "config"
 |  ├── member_role BIGINT DEFAULT 0
 |  ├── welcome_channel BIGINT DEFAULT 0
-|  ├── flags_url TEXT DEFAULT ''
 |  ├── world_channel BIGINT DEFAULT 0
 |  ├── journalism_channel BIGINT DEFAULT 0
 ├── Table "nations"

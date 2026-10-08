@@ -21,7 +21,7 @@
             d. Try to get some information about the user in the "nationality" table. If we get some data back, it means that the user is already part of a nation.
             e. Try to get some information about the nation that the user is part of to make a clean detailed error message.
         2) We process the joining request.
-            a. If the nation is set as "opened" by the government, we immediatly register the user as citizen of the nation in the database.
+            a. If the nation is set as "opened" by the government, we immediately register the user as citizen of the nation in the database.
             b. If the nation is set as "on invitation", we verify that the user has a pending invitation.
             c. Verify that the invitation has not expired yet. If it expired, we directly delete the invitation from the database.
             d. Try to give the nation role to the user.
@@ -49,7 +49,7 @@ void Nation::join_nation
     const std::string nation_id = Database::sanitize_input(database, std::get<std::string>(event.get_parameter("nation_id")));
 
     ///////// b. /////////
-    Database::Output nations = Database::db_query(database, "SELECT display_name, join_condition, role_id FROM nations WHERE nation_id = '" + nation_id + "' LIMIT 1");
+    Database::Output nations = Database::db_query(database, "SELECT display_name, government_type, join_condition, role_id FROM nations WHERE nation_id = '" + nation_id + "' LIMIT 1");
 
     if (nations.size() == 0)
     {
@@ -58,12 +58,13 @@ void Nation::join_nation
     }
 
     ///////// c. /////////
+    const std::string government_type = Text::get_government_type(std::stoi(nations[0]["government_type"]));
     const int join_condition = std::stoi(nations[0]["join_condition"]);
     const std::string display_name = nations[0]["display_name"];
 
     if (join_condition == CLOSED)
     {
-        event.reply(dpp::message(":prohibited: " + display_name + " is currently closed to anyone.").set_flags(dpp::m_ephemeral));
+        event.reply(dpp::message(":prohibited: The " + government_type + " of " + display_name + " is currently closed to anyone.").set_flags(dpp::m_ephemeral));
         return;
     }
 
@@ -75,7 +76,7 @@ void Nation::join_nation
     {
         ///////// e. /////////
         const std::string current_nation_id = nationality[0]["nation_id"];
-        Database::Output current = Database::db_query(database, "SELECT display_name, rank FROM nations WHERE nation_id = '" + current_nation_id + "' LIMIT 1");
+        Database::Output current = Database::db_query(database, "SELECT display_name, government_type FROM nations WHERE nation_id = '" + current_nation_id + "' LIMIT 1");
 
         if (current.size() == 0)
         {
@@ -84,9 +85,9 @@ void Nation::join_nation
         }
 
         const std::string current_name = current[0]["display_name"];
-        const std::string rank = current[0]["rank"];
+        const std::string current_gov_type = current[0]["government_type"];
 
-        return event.reply(dpp::message(":prohibited: You are already part of " + current_name + " as " + rank + ".").set_flags(dpp::m_ephemeral));
+        return event.reply(dpp::message(":prohibited: You are already part of the " + current_gov_type + " of " + current_name + ".").set_flags(dpp::m_ephemeral));
     }
 
     ////////////////// 2) //////////////////
@@ -97,7 +98,7 @@ void Nation::join_nation
     if (join_condition == OPENED)
     {
         Database::db_query(database, "INSERT INTO nationality (user_id, nation_id, rank, last_rank_update, joining_time) VALUES ('" + std::to_string(user_id) + "', '" + nation_id + "', '" + citizen + "', '" + now + "', '" + now + "')");
-        event.reply(dpp::message(":hammer_pick: You are now a citizen of " + display_name + ".").set_flags(dpp::m_ephemeral));
+        event.reply(dpp::message(":hammer_pick: You are now a citizen of the " + government_type + " of " + display_name + ".").set_flags(dpp::m_ephemeral));
     }
 
     ///////// b. /////////
@@ -109,7 +110,7 @@ void Nation::join_nation
 
         if (invitation.size() == 0)
         {
-            event.reply(dpp::message(":prohibited: You need an invitation to join " + display_name + ".").set_flags(dpp::m_ephemeral));
+            event.reply(dpp::message(":prohibited: You need an invitation to join the " + government_type + " of " + display_name + ".").set_flags(dpp::m_ephemeral));
             return;
         }
 
@@ -120,11 +121,11 @@ void Nation::join_nation
         if (invitation_time + expiration < std::stoll(now))
         {
             Database::db_query(database, "DELETE FROM invitations WHERE user_id = '" + std::to_string(user_id) + "' AND nation_id = '" + nation_id + "'");
-            return event.reply(dpp::message(":prohibited: Your invitation to join " + display_name + " has expired.").set_flags(dpp::m_ephemeral));
+            return event.reply(dpp::message(":prohibited: Your invitation to join the " + government_type + " of " + display_name + " has expired.").set_flags(dpp::m_ephemeral));
         }
 
         Database::db_query(database, "INSERT INTO nationality (user_id, nation_id, rank, last_rank_update, joining_time) VALUES ('" + std::to_string(user_id) + "', '" + nation_id + "', '" + citizen + "', '" + now + "', '" + now + "')");
-        event.reply(dpp::message(":hammer_pick: You are now a citizen of " + display_name + ".").set_flags(dpp::m_ephemeral));
+        event.reply(dpp::message(":hammer_pick: You are now a citizen of the " + government_type + " of " + display_name + ".").set_flags(dpp::m_ephemeral));
         inviter_id = invitation[0]["invited_by"];
     }
 
@@ -166,15 +167,15 @@ void Nation::join_nation
     const dpp::embed embed = dpp::embed()
     .set_color(dpp::colors::light_green)
     .set_title("New Citizen")
-    .set_description("<@" + std::to_string(user_id) + "> just received his citizenship from " + display_name + "." + was_invited);
+    .set_description("<@" + std::to_string(user_id) + "> just received their citizenship from the " + government_type + " of " + display_name + "." + was_invited);
 
     bot.message_create
     (
         dpp::message(world_channel, "").add_embed(embed),
         [world_channel](const dpp::confirmation_callback_t &callback)
         {
-         if (callback.is_error())
-             Logs::log("Warning: Failed to send message in " + std::to_string(world_channel) + " with error " + callback.get_error().human_readable + " -> /nation join.");
+            if (callback.is_error())
+                Logs::log("Warning: Failed to send message in " + std::to_string(world_channel) + " with error " + callback.get_error().human_readable + " -> /nation join.");
         }
     );
 }

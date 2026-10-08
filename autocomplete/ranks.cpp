@@ -23,8 +23,13 @@ void Autocomplete::ranks
 )
 {
     ////////////////// 1) //////////////////
-    for (const auto &option : event.options)
-        if (option.focused && option.name != "new_rank") return;
+    bool focused = false;
+
+    for (const auto &option : event.options[0].options)
+        if (option.focused && option.name == "new_rank") focused = true;
+
+    if (!focused)
+        return;
 
     ////////////////// 2) //////////////////
     bot.interaction_response_create

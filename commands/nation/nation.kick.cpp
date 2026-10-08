@@ -65,7 +65,7 @@ void Nation::nation_kick
 
     ///////// c. /////////
     const std::string executer_nation_id = executer_nationality[0]["nation_id"];
-    Database::Output nations = Database::db_query(database, "SELECT display_name, role_id FROM nations WHERE nation_id = '" + executer_nation_id + "' LIMIT 1");
+    Database::Output nations = Database::db_query(database, "SELECT display_name, government_type, role_id FROM nations WHERE nation_id = '" + executer_nation_id + "' LIMIT 1");
 
     if (nations.size() == 0)
     {
@@ -75,11 +75,13 @@ void Nation::nation_kick
 
     ///////// d. /////////
     Database::Output user_nationality = Database::db_query(database, "SELECT nation_id, rank FROM nationality WHERE user_id = '" + std::to_string(user_id) + "' LIMIT 1");
+
     const std::string display_name = nations[0]["display_name"];
+    const std::string government_type = Text::get_government_type(std::stoi(nations[0]["government_type"]));
 
     if (user_nationality.size() == 0)
     {
-        event.reply(dpp::message(":prohibited: You can not kick <@" + std::to_string(user_id) + "> out of " + display_name + " as they are stateless.").set_flags(dpp::m_ephemeral));
+        event.reply(dpp::message(":prohibited: You can not kick <@" + std::to_string(user_id) + "> out of the " + government_type + " of " + display_name + " as they are stateless.").set_flags(dpp::m_ephemeral));
         return;
     }
 
@@ -90,16 +92,18 @@ void Nation::nation_kick
 
     if (user_nation_id != executer_nation_id)
     {
-        Database::Output user_nation = Database::db_query(database, "SELECT display_name FROM nations WHERE nation_id = '" + user_nation_id + "' LINIT 1");
+        Database::Output user_nation = Database::db_query(database, "SELECT display_name, government_type FROM nations WHERE nation_id = '" + user_nation_id + "' LIMIT 1");
 
         if (user_nation.size() == 0)
         {
             Logs::log("Warning: Nation ID " + user_nation_id + " missing in database -> /nation kick.");
-            return event.reply(dpp::message(":prohibited: You can not kick <@" + std::to_string(user_id) + "> as they are not part of " + display_name + ".").set_flags(dpp::m_ephemeral));
+            return event.reply(dpp::message(":prohibited: You can not kick <@" + std::to_string(user_id) + "> as they are not part of the " + government_type + " of " + display_name + ".").set_flags(dpp::m_ephemeral));
         }
 
         const std::string user_nation_name = user_nation[0]["display_name"];
-        return event.reply(dpp::message(":prohibited: You can not kick <@" + std::to_string(user_id) + "> out of " + display_name + " as they are part of " + user_nation_name + " as " + user_rank_name + ".").set_flags(dpp::m_ephemeral));
+        const std::string user_gov_type = Text::get_government_type(std::stoi(user_nation[0]["government_type"]));
+
+        return event.reply(dpp::message(":prohibited: You can not kick <@" + std::to_string(user_id) + "> out of the " + government_type + " of " + display_name + " as they are part of " + user_gov_type + " " + user_nation_name + ".").set_flags(dpp::m_ephemeral));
     }
 
     ///////// f. /////////
@@ -108,28 +112,28 @@ void Nation::nation_kick
 
     if (executer_rank == CITIZEN || executer_rank == MILITARY)
     {
-        event.reply(dpp::message(":prohibited: As a " + executer_rank_name + ", you are not allowed to kick any member in " + display_name + ".").set_flags(dpp::m_ephemeral));
+        event.reply(dpp::message(":prohibited: As a " + executer_rank_name + ", you are not allowed to kick any member from the " + government_type + " of " + display_name + ".").set_flags(dpp::m_ephemeral));
         return;
     }
 
     ///////// g. /////////
     if (user_rank == executer_rank)
     {
-        event.reply(dpp::message(":prohibited: You can not kick " + user_rank_name + " <@" + std::to_string(user_id) + "> out of " + display_name + " as you share the same rank.").set_flags(dpp::m_ephemeral));
+        event.reply(dpp::message(":prohibited: You can not kick " + user_rank_name + " <@" + std::to_string(user_id) + "> out of the " + government_type + " of " + display_name + " as you share the same rank.").set_flags(dpp::m_ephemeral));
         return;
     }
 
     ///////// h. /////////
     if (user_rank > executer_rank)
     {
-        event.reply(dpp::message(":prohibited: You can not kick " + user_rank_name + " <@" + std::to_string(user_id) + "> out of " + display_name + " as they have a higher rank than you (" + user_rank_name + " > " + executer_rank_name + ").").set_flags(dpp::m_ephemeral));
+        event.reply(dpp::message(":prohibited: You can not kick " + user_rank_name + " <@" + std::to_string(user_id) + "> out of the " + government_type + " of " + display_name + " as they have a higher rank than you (" + user_rank_name + " > " + executer_rank_name + ").").set_flags(dpp::m_ephemeral));
         return;
     }
 
     ////////////////// 2) //////////////////
     ///////// a. /////////
     Database::db_query(database, "DELETE FROM nationality WHERE user_id = '" + std::to_string(user_id) + "'");
-    event.reply(dpp::message(":hammer: <@" + std::to_string(user_id) + "> has been kicked from " + display_name + ".").set_flags(dpp::m_ephemeral));
+    event.reply(dpp::message(":hammer: <@" + std::to_string(user_id) + "> has been kicked from the " + government_type + " of " + display_name + ".").set_flags(dpp::m_ephemeral));
 
     ///////// b. /////////
     const dpp::snowflake guild_id = event.command.guild_id;
@@ -156,7 +160,7 @@ void Nation::nation_kick
     const dpp::embed embed = dpp::embed()
     .set_color(dpp::colors::red)
     .set_title("Citizenship Removal")
-    .set_description(user_rank_name + " <@" + std::to_string(user_id) + "> was kicked out of " + display_name + " by " + executer_rank_name + " <@" + std::to_string(executer_id) + ">.");
+    .set_description(user_rank_name + " <@" + std::to_string(user_id) + "> was kicked out of the " + government_type + " of " + display_name + " by " + executer_rank_name + " <@" + std::to_string(executer_id) + ">.");
 
     bot.message_create
     (
