@@ -18,106 +18,21 @@ DB_USER=database_username
 DB_PASSWORD=database_password
 ```
 
-# 🖥️ Database setup
-``` sql
-- Database "mineworld"
-├── Table "config"
-|  ├── member_role BIGINT DEFAULT 0
-|  ├── welcome_channel BIGINT DEFAULT 0
-|  ├── world_channel BIGINT DEFAULT 0
-|  ├── journalism_channel BIGINT DEFAULT 0
-├── Table "nations"
-|  ├── nation_id BIGINT PRIMARY KEY AUTO_INCREMENT
-|  ├── display_name VARCHAR(50) NOT NULL
-|  ├── description VARCHAR(500) DEFAULT "No description." NOT NULL
-|  ├── role_id BIGINT DEFAULT 0
-|  ├── join_condition TINYINT DEFAULT 1
-|  ├── invite_permission TINYINT DEFAULT 0
-|  ├── creation_time BIGINT DEFAULT (UNIX_TIMESTAMP()) NOT NULL
-|  ├── tux_balance BIGINT DEFAULT 0
-|  ├── government_type TINYINT DEFAULT 0
-|  ├── ideology TINYINT DEFAULT 8
-|  ├── leadership_changes BIGINT DEFAULT 0
-|  ├── last_leadership_change BIGINT DEFAULT 0
-|  ├── government_changes BIGINT DEFAULT 0
-|  ├── last_government_change BIGINT DEFAULT 0
-|  ├── media_freedom TINYINT DEFAULT 100
-|  ├── media_posts BIGINT DEFAULT 0
-|  ├── last_post BIGINT DEFAULT 0
-|  ├── censored_posts BIGINT DEFAULT 0
-|  ├── media_whitelist BOOLEAN DEFAULT 0
-|  ├── media_blacklist BOOLEAN DEFAULT 0
-|  ├── last_manual_censorship BIGINT DEFAULT 0
-|  ├── last_automatic_censorship BIGINT DEFAULT 0
-|  ├── nuclear_state TINYINT DEFAULT 0
-|  ├── acquired_nuclear_time BIGINT DEFAULT 0
-|  ├── veto_state BOOLEAN DEFAULT 0
-|  ├── veto_usage_count BIGINT DEFAULT 0
-|  ├── last_veto_usage BIGINT DEFAULT 0
-|  ├── resolutions_count BIGINT DEFAULT 0
-|  ├── last_resolution BIGINT DEFAULT 0
-|  ├── passed_resolutions BIGINT DEFAULT 0
-|  ├── last_passed_resolution BIGINT DEFAULT 0
-├── Table "nationality"
-|  ├── user_id BIGINT PRIMARY KEY NOT NULL
-|  ├── nation_id VARCHAR(50) DEFAULT 0
-|  ├── rank TINYINT DEFAULT 0
-|  ├── last_rank_update BIGINT DEFAULT 0
-|  ├── joining_time BIGINT DEFAULT 0
-├── Table "relations"
-|  ├── defining_nation VARCHAR(50) NOT NULL
-|  ├── targeted_nation VARCHAR(50) NOT NULL
-|  ├── score TINYINT DEFAULT 50
-|  ├── PRIMARY KEY (defining_nation, targeted_nation)
-├── Table "sanctions"
-|  ├── resolution_id BIGINT PRIMARY KEY AUTO_INCREMENT
-|  ├── pending BOOLEAN DEFAULT 1
-|  ├── nation_id VARCHAR(50) NOT NULL
-|  ├── sanctioned_nation VARCHAR(50) NOT NULL
-|  ├── sanction_type TINYINT
-|  ├── sanction_title VARCHAR(100) NOT NULL
-|  ├── sanction_details VARCHAR(500) NOT NULL
-|  ├── sanction_amount BIGINT NOT NULL
-|  ├── sanction_start BIGINT NOT NULL
-|  ├── sanction_duration VARCHAR(3) NOT NULL
-|  ├── sanction_end BIGINT NOT NULL
-|  ├── vote_start BIGINT DEFAULT (UNIX_TIMESTAMP()) NOT NULL
-|  ├── vote_duration VARCHAR(3) NOT NULL
-|  ├── vote_end BIGINT NOT NULL
-|  ├── votes_for TEXT DEFAULT ""
-|  ├── votes_against TEXT DEFAULT ""
-├── Table "laws"
-|  ├── resolution_id BIGINT PRIMARY KEY AUTO_INCREMENT
-|  ├── pending BOOLEAN DEFAULT 1
-|  ├── nation_id VARCHAR(50) NOT NULL
-|  ├── law_title VARCHAR(100) NOT NULL
-|  ├── law_details VARCHAR(500) NOT NULL
-|  ├── law_adoption_time BIGINT DEFAULT 0
-|  ├── vote_start BIGINT DEFAULT (UNIX_TIMESTAMP()) NOT NULL
-|  ├── vote_duration VARCHAR(3) NOT NULL
-|  ├── vote_end BIGINT NOT NULL
-|  ├── votes_for TEXT DEFAULT ""
-|  ├── votes_against TEXT DEFAULT ""
-├── Table "un_membership"
-|  ├── nation_id VARCHAR(50) PRIMARY KEY NOT NULL
-|  ├── pending BOOLEAN DEFAULT 1
-|  ├── invited_by VARCHAR(50) NOT NULL
-|  ├── joining_time BIGINT DEFAULT 0
-|  ├── vote_start BIGINT DEFAULT (UNIX_TIMESTAMP()) NOT NULL
-|  ├── vote_duration VARCHAR(3) NOT NULL
-|  ├── vote_end BIGINT NOT NULL
-|  ├── votes_for TEXT DEFAULT ""
-|  ├── votes_against TEXT DEFAULT ""
-├── Table "journalism"
-|  ├── user_id BIGINT PRIMARY KEY NOT NULL
-|  ├── status TINYINT
-├── Table "invitations"
-|  ├── user_id BIGINT NOT NULL
-|  ├── nation_id VARCHAR(50) NOT NULL
-|  ├── invited_by VARCHAR(50) NOT NULL
-|  ├── creation_time BIGINT NOT NULL
-|  ├── PRIMARY KEY (user_id, nation_id)
-```
+# 🖥️ Database
+- **config** (member_role, welcome_channel, world_channel, journalism_channel).
+- **invitations** (<ins>(user_id, nation_id)</ins>, invited_by, creation_time).
+- **journalism** (<ins>user_id</ins>, status).
+- **laws** (<ins>resolution_id</ins>, pending, nation_id, law_title, law_details, law_adoption_time, vote_start, vote_duration, vote_end, votes_for, votes_against)
+- **nationality** (<ins>user_id</ins>, nation_id, rank, last_rank_update, joining_time).
+- **nations** (<ins>nation_id</ins>, display_name, description, role_id, join_condition, invite_permission, creation_time, tux_balance, government_type, ideology, leadership_changes, 
+               last_leadership_change, government_changes, last_government_change, media_freedom, media_posts, last_post, censored_posts, media_whitelist, media_blacklist, 
+               last_manual_censorship, last_automatic_censorship, nuclear_state, acquired_nuclear_time, veto_state, veto_usage_count, last_veto_usage, resolutions_count, last_resolution, 
+               passed_resolutions, last_passed_resolution).
+- **news** (<ins>news_id</ins>, title, content).
+- **relations** (<ins>(defining_nation, targeted_nation)</ins>, score).
+- **sanctions** (<ins>resolution_id</ins>, pending, nation_id, sanctioned_nation, sanction_type, sanction_title, sanction_details, sanction_amount, sanction_start, sanction_duration, 
+                 sanction_end,vote_start, vote_duration, vote_end, votes_for, votes_against).
+- **un_membership** (<ins>nation_id</ins>, pending, invited_by, joining_time, vote_start, vote_duration, vote_end, votes_for, votes_against).
 
 # 📥 Installation
 1) Download the project. <br/>
