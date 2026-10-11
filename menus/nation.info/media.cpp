@@ -15,7 +15,6 @@
         1) We do some verification.
             a. Verify that we can get some nation ID from the message content (4 "||" characters + at least one character).
             b. Verify that the nation exists.
-            c. Try to get some configuration from database.
         2) Process the menu display request.
             a. Try to get all users of the nation that are blacklisted and format a list.
             b. Try to get all users of the nation that are whitelisted and format a list.
@@ -58,15 +57,6 @@ void NationInfo::media
         return;
     }
 
-    ///////// c. /////////
-    Database::Output config = Database::db_query(database, "SELECT flags_url FROM config LIMIT 1");
-
-    if (config.size() == 0)
-    {
-        event.reply(dpp::message(":prohibited: No configuration is available to find required display elements.").set_flags(dpp::m_ephemeral));
-        return;
-    }
-
     ////////////////// 2) //////////////////
     ///////// a. /////////
     Database::Output nation_blacklist = Database::db_query(database, "SELECT user_id FROM journalism WHERE status = '" + std::to_string(BLACKLIST) + "'");
@@ -102,7 +92,6 @@ void NationInfo::media
 
     ///////// c. /////////
     const std::string display_name = nations[0]["display_name"];
-    const std::string flags_url = config[0]["flags_url"];
 
     const std::string post_count = nations[0]["media_posts"];
     const int percentage = (post_count == "0" ? 0 : (int)(std::stoi(nations[0]["censored_posts"]) / std::stoi(post_count)));
@@ -119,10 +108,31 @@ void NationInfo::media
     const dpp::embed embed = dpp::embed()
     .set_color(dpp::colors::cyan)
     .set_title(display_name)
-    .set_thumbnail(flags_url + nation_id + ".png")
-    .add_field(":dove: Media", "**Freedom of speech**: " + freedom_rating + ".\n**Publications**: " + post_count + " post(s).\n**Last publication**: " + last_post + ".")
-    .add_field(":mute: Censorship", "**Censored posts**: " + censored_posts + ".\n**Media blacklist**: " + media_blacklist + ".\n**Media whitelist**: " + media_whitelist + ".\n**Last manual censorship**: " + last_manual + ".\n**Last automatic censorship**: " + last_automatic + ".")
-    .add_field(":scroll: Lists", "**Blacklisted users**: " + blacklist + ".\n**Whitelisted users**: " + whitelist + ".")
+    .add_field
+    (
+        ":dove: Media",
+
+        "**Freedom of speech**: " + freedom_rating + ".\n" +
+        "**Publications**: " + post_count + " post(s).\n" +
+        "**Last publication**: " + last_post + "."
+    )
+    .add_field
+    (
+        ":mute: Censorship",
+
+        "**Censored posts**: " + censored_posts + ".\n" +
+        "**Media blacklist**: " + media_blacklist + ".\n" +
+        "**Media whitelist**: " + media_whitelist + ".\n" +
+        "**Last manual censorship**: " + last_manual + ".\n" +
+        "**Last automatic censorship**: " + last_automatic + "."
+    )
+    .add_field
+    (
+        ":scroll: Lists",
+
+        "**Blacklisted users**: " + blacklist + ".\n" +
+        "**Whitelisted users**: " + whitelist + "."
+    )
     .set_footer(dpp::embed_footer().set_icon(event.command.usr.get_avatar_url()).set_text("Requested by " + event.command.usr.username + "."));
 
     ///////// e. /////////

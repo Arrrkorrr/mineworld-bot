@@ -24,9 +24,9 @@ std::string Text::get_government_type
     ////////////////// 1) //////////////////
     const std::vector<std::string> governments
     {
-        "Presidential Republic",  "Parlimentary Republic",  "Federal Republic", "Monarchy",
-        "Consitutional Monarchy", "Confederation",          "Military Rule",    "Anarchy",
-        "Oligarchy",              "Aristocracy",            "One-Party State"
+        "Presidential Republic",   "Parliamentary Republic",  "Federal Republic", "Monarchy",
+        "Constitutional Monarchy", "Confederation",           "Military Rule",    "Anarchy",
+        "Oligarchy",               "Aristocracy",            "One-Party State"
     };
 
     ////////////////// 2) //////////////////

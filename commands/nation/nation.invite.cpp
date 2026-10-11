@@ -4,9 +4,9 @@
 #include "../../utils/database/database.hpp"
 #include "../../utils/logs/logs.hpp"
 #include "../../utils/miscellaneous/miscellaneous.hpp"
+#include "../../utils/text/text.hpp"
 
 #include <dpp/dpp.h>
-#include <dpp/snowflake.h>
 #include <mysql/mysql.h>
 #include <string>
 
@@ -61,7 +61,7 @@ void Nation::nation_invite
 
     ///////// c. /////////
     const std::string nation_id = nationality[0]["nation_id"];
-    Database::Output nations = Database::db_query(database, "SELECT display_name, join_condition, invite_permission FROM nations WHERE nation_id = '" + nation_id + "' LIMIT 1");
+    Database::Output nations = Database::db_query(database, "SELECT display_name, government_type, join_condition, invite_permission FROM nations WHERE nation_id = '" + nation_id + "' LIMIT 1");
 
     if (nations.size() == 0)
     {
@@ -70,18 +70,19 @@ void Nation::nation_invite
     }
 
     ///////// d. /////////
+    const std::string government_type = Text::get_government_type(stoi(nations[0]["government_type"]));
     const int join_condition = std::stoi(nations[0]["join_condition"]);
     const std::string display_name = nations[0]["display_name"];
 
     if (join_condition == OPENED)
     {
-        event.reply(dpp::message(":prohibited: " + display_name + " is already opened for anyone to join.").set_flags(dpp::m_ephemeral));
+        event.reply(dpp::message(":prohibited: The " + government_type + " of " + display_name + " is already opened for anyone to join.").set_flags(dpp::m_ephemeral));
         return;
     }
 
     if (join_condition == CLOSED)
     {
-        event.reply(dpp::message(":prohibited: " + display_name + " is currently closed to anyone.").set_flags(dpp::m_ephemeral));
+        event.reply(dpp::message(":prohibited: The " + government_type + " of " + display_name + " is currently closed to anyone.").set_flags(dpp::m_ephemeral));
         return;
     }
 
@@ -92,7 +93,7 @@ void Nation::nation_invite
 
     if ((permission == GOV_ONLY && rank < MINISTER) || (permission == PM_MINIMUM && rank < PRIME_MINISTER) || (permission == LEADER_ONLY && rank < LEADER))
     {
-        event.reply(dpp::message(":prohibited: You are not allowed to send invitations due to ongoing government immigration laws.").set_flags(dpp::m_ephemeral));
+        event.reply(dpp::message(":prohibited: You are not allowed to send invitations due to current immigration laws imposed by your government.").set_flags(dpp::m_ephemeral));
         return;
     }
 
@@ -107,7 +108,7 @@ void Nation::nation_invite
 
         if (invitation_time + expiration > now)
         {
-            event.reply(dpp::message(":prohibited: <@" + std::to_string(user_id) + "> already has a pending invitation to join " + display_name + ".").set_flags(dpp::m_ephemeral));
+            event.reply(dpp::message(":prohibited: <@" + std::to_string(user_id) + "> already has a pending invitation to join the " + government_type + " of " + display_name + ".").set_flags(dpp::m_ephemeral));
             return;
         }
         else Database::db_query(database, "DELETE FROM invitations WHERE user_id = '" + std::to_string(user_id) + "' AND nation_id = '" + nation_id + "'");
@@ -115,5 +116,5 @@ void Nation::nation_invite
 
     ///////// c. /////////
     Database::db_query(database, "INSERT INTO invitations (user_id, nation_id, invited_by, creation_time) VALUES ('" + std::to_string(user_id) + "', '" + nation_id + "', '" + std::to_string(executer_id) + "', '" + std::to_string(now) + "')");
-    event.reply(dpp::message(":envelope: An invitation is now pending for <@" + std::to_string(user_id) + "> to join " + display_name + ".\n:warning: They have 24 hours to run `/nation join` before it expires.").set_flags(dpp::m_ephemeral));
+    event.reply(dpp::message(":envelope: An invitation is now pending for <@" + std::to_string(user_id) + "> to join the " + government_type + " of " + display_name + ".\n:warning: They have 24 hours to run `/nation join` before it expires.").set_flags(dpp::m_ephemeral));
 }

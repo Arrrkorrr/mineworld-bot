@@ -67,7 +67,7 @@ void Buttons::journalism_delete
     message.set_content(":warning: Post deleted by their publisher.");
     bot.message_edit(message);
 
-    event.reply(dpp::message(":wastebasket: Your post has been removed.").set_flags(dpp::m_ephemeral));
+    event.reply();
 }
 
 
@@ -122,7 +122,7 @@ void Buttons::journalism_censor
 
     ///////// b. /////////
     const std::string nation_id = executer_nationality[0]["nation_id"];
-    Database::Output nations = Database::db_query(database, "SELECT display_name FROM nations WHERE nation_id = '" + nation_id + "' LIMIT 1");
+    Database::Output nations = Database::db_query(database, "SELECT display_name, government_type FROM nations WHERE nation_id = '" + nation_id + "' LIMIT 1");
 
     if (nations.size() == 0)
     {
@@ -133,10 +133,11 @@ void Buttons::journalism_censor
     ///////// c. /////////
     const int executer_rank = std::stoi(executer_nationality[0]["rank"]);
     const std::string display_name = nations[0]["display_name"];
+    const std::string government_type = Text::get_government_type(std::stoi(nations[0]["government_type"]));
 
     if (executer_rank < MINISTER)
     {
-        event.reply(dpp::message(":prohibited: You must be a government official of " + display_name + " to censor posts.").set_flags(dpp::m_ephemeral));
+        event.reply(dpp::message(":prohibited: You must be a government official of the " + government_type + " of " + display_name + " to censor posts.").set_flags(dpp::m_ephemeral));
         return;
     }
 
@@ -162,11 +163,13 @@ void Buttons::journalism_censor
         if (post_nation.size() == 0)
         {
             Logs::log("Warning: Nation ID " + post_nation_id + " missing in database -> journalism_censor button.");
-            return event.reply(dpp::message(":prohibited: You can not censor a post published from another country being " + rank_name + " of " + display_name + ".").set_flags(dpp::m_ephemeral));
+            return event.reply(dpp::message(":prohibited: You can not censor a post published from another country being " + rank_name + " of the " + government_type + " of " + display_name + ".").set_flags(dpp::m_ephemeral));
         }
 
         const std::string post_nation_name = post_nation[0]["display_name"];
-        return event.reply(dpp::message(":prohibited: You can not censor a post published from " + post_nation_name + " being " + rank_name + " of " + display_name + ".").set_flags(dpp::m_ephemeral));
+        const std::string post_nation_gov_type = Text::get_government_type(std::stoi(post_nation[0]["government_type"]));
+
+        return event.reply(dpp::message(":prohibited: You can not censor a post published from the " + post_nation_gov_type + " of " + post_nation_name + " being " + rank_name + " of the " + government_type + " of " + display_name + ".").set_flags(dpp::m_ephemeral));
     }
 
     ///////// f. /////////
@@ -194,14 +197,14 @@ void Buttons::journalism_censor
             ///////// h. /////////
             if (user_rank > executer_rank)
             {
-                event.reply(dpp::message(":prohibited: You can not censor a post published by " + user_rank_name + " <@" + user_id + "> of " + display_name + " as they have a higher rank than you (" + user_rank_name + " > " + rank_name + ").").set_flags(dpp::m_ephemeral));
+                event.reply(dpp::message(":prohibited: You can not censor a post published by " + user_rank_name + " <@" + user_id + "> of the " + government_type + " of " + display_name + " as they have a higher rank than you (" + user_rank_name + " > " + rank_name + ").").set_flags(dpp::m_ephemeral));
                 return;
             }
 
             ///////// i. /////////
             if (user_rank == executer_rank)
             {
-                event.reply(dpp::message(":prohibited: You can not censor a post published by " + user_rank_name + " <@" + user_id + "> of " + display_name + " as you share the same rank.").set_flags(dpp::m_ephemeral));
+                event.reply(dpp::message(":prohibited: You can not censor a post published by " + user_rank_name + " <@" + user_id + "> of the " + government_type + " of " + display_name + " as you share the same rank.").set_flags(dpp::m_ephemeral));
                 return;
             }
         }
@@ -214,7 +217,7 @@ void Buttons::journalism_censor
     message.components.clear();
 
     ///////// b. /////////
-    message.set_content(":warning: Post taken down by the government of " + display_name + ".");
+    message.set_content(":warning: Post taken down by the government of the " + government_type + " of " + display_name + ".");
     bot.message_edit(message);
 
     ///////// c. /////////
@@ -233,8 +236,7 @@ void Buttons::journalism_censor
         if (registered.size() == 0)
             Database::db_query(database, "INSERT INTO journalism (user_id, status) VALUES ('" + user_id + "', 1)");
         else Database::db_query(database, "UPDATE journalism SET status = 1 WHERE user_id = '" + user_id + "'");
-
-        event.reply(dpp::message(":wastebasket: This post has been censored and " + user_rank_name + " <@" + user_id + "> blacklisted. The media freedom rating of " + display_name + " was hit by 8 points.").set_flags(dpp::m_ephemeral));
     }
-    else event.reply(dpp::message(":wastebasket: This post published by " + user_rank_name + " <@" + user_id + "> has been censored. The media freedom rating of " + display_name + " was hit by 3 points.").set_flags(dpp::m_ephemeral));
+
+    event.reply();
 }
