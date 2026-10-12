@@ -46,7 +46,7 @@ void Nation::join_nation
 {
     ////////////////// 1) //////////////////
     ///////// a. /////////
-    const std::string nation_id = Database::sanitize_input(database, std::get<std::string>(event.get_parameter("nation_id")));
+    const std::string nation_id = Database::sanitize_input(database, std::to_string(std::get<int64_t>(event.get_parameter("nation_id"))));
 
     ///////// b. /////////
     Database::Output nations = Database::db_query(database, "SELECT display_name, government_type, join_condition, role_id FROM nations WHERE nation_id = '" + nation_id + "' LIMIT 1");
