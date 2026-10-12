@@ -214,13 +214,13 @@ void Nation::nation_rank
     {
         embed.set_color(dpp::colors::gold)
         .set_title("Leadership Change")
-        .set_description("The Head of State <@" + std::to_string(executer_id) + "> of the " + government_type + " of " + display_name + " resigned from their functions and named " + user_rank_name + " <@" + std::to_string(user_id) + "> as their successor.");
+        .set_description("The Head of State <@" + std::to_string(executer_id) + "> of the " + government_type + " of " + display_name + " resigned from their functions and named the " + user_rank_name + " <@" + std::to_string(user_id) + "> as their successor.");
     }
     else if (new_rank == PRIME_MINISTER)
     {
         embed.set_color(dpp::colors::gold)
         .set_title("Prime Minister Change")
-        .set_description("The Head of State <@" + std::to_string(executer_id) + "> named " + user_rank_name + " <@" + std::to_string(user_id) + "> as the new Prime Minister of the " + government_type + " of " + display_name + ".");
+        .set_description("The Head of State <@" + std::to_string(executer_id) + "> named the " + user_rank_name + " <@" + std::to_string(user_id) + "> as the new Prime Minister of the " + government_type + " of " + display_name + ".");
     }
     else
     {
@@ -228,7 +228,7 @@ void Nation::nation_rank
 
         embed.set_color(color)
         .set_title("Rank Modification")
-        .set_description(executer_rank_name + " <@" + std::to_string(executer_id) + "> just " + verb + " " + user_rank_name + " <@" + std::to_string(user_id) + "> to " + rank_name + " of the " + government_type + " of " + display_name + ".");
+        .set_description("The " + executer_rank_name + " <@" + std::to_string(executer_id) + "> just " + verb + " the " + user_rank_name + " <@" + std::to_string(user_id) + "> to " + rank_name + " of the " + government_type + " of " + display_name + ".");
     }
 
     bot.message_create

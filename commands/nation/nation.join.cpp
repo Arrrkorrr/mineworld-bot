@@ -160,7 +160,7 @@ void Nation::join_nation
         if (inviter.size() != 0)
         {
             const std::string rank = Text::get_rank(std::stoi(inviter[0]["rank"]));
-            was_invited = " They were invited by " + rank + " <@" + inviter_id + ">.";
+            was_invited = " They were invited by the " + rank + " <@" + inviter_id + "> of " + display_name + ".";
         }
     }
 

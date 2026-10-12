@@ -87,7 +87,7 @@ void NationInfo::politics
     Database::Output nation_citizens = Database::db_query(database, "SELECT user_id FROM nationality WHERE nation_id = '" + nation_id + "' AND rank = '" + std::to_string(CITIZEN) + "'");
     std::string citizens;
 
-    if (citizens.size() != 0)
+    if (nation_citizens.size() != 0)
     {
         for (std::map<std::string, std::string> &user : nation_citizens)
         {
