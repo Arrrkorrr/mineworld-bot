@@ -44,10 +44,9 @@ void Nation::nation_relation
 {
     ////////////////// 1) //////////////////
     ///////// a. /////////
-    std::string target_id = std::get<std::string>(event.get_parameter("nation_id"));
+    const std::string target_id = Database::sanitize_input(database, std::to_string(std::get<int64_t>(event.get_parameter("nation_id"))));
     const int64_t score = std::clamp(std::get<int64_t>(event.get_parameter("score")), 0L, 100L);
 
-    target_id = Database::sanitize_input(database, target_id);
     Database::Output target = Database::db_query(database, "SELECT display_name, government_type FROM nations WHERE nation_id = '" + target_id + "' LIMIT 1");
 
     if (target.size() == 0)

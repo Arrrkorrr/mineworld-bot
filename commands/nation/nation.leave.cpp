@@ -108,7 +108,7 @@ void Nation::leave_nation
     const dpp::embed embed = dpp::embed()
     .set_color(dpp::colors::red)
     .set_title("Citizenship Renounced")
-    .set_description(rank_name + " <@" + std::to_string(user_id) + "> just left the " + government_type + " of " + display_name + " and are now stateless.");
+    .set_description("The " + rank_name + " <@" + std::to_string(user_id) + "> just left the " + government_type + " of " + display_name + " and are now stateless.");
 
     bot.message_create
     (

@@ -160,7 +160,7 @@ void Nation::nation_kick
     const dpp::embed embed = dpp::embed()
     .set_color(dpp::colors::red)
     .set_title("Citizenship Removal")
-    .set_description(user_rank_name + " <@" + std::to_string(user_id) + "> was kicked out of the " + government_type + " of " + display_name + " by " + executer_rank_name + " <@" + std::to_string(executer_id) + ">.");
+    .set_description("The " + user_rank_name + " <@" + std::to_string(user_id) + "> was kicked out of the " + government_type + " of " + display_name + " by the " + executer_rank_name + " <@" + std::to_string(executer_id) + ">.");
 
     bot.message_create
     (

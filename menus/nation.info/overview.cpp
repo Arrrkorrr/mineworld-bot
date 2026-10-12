@@ -47,7 +47,7 @@ void NationInfo::overview
 
     ///////// b. /////////
     const std::string nation_id = event.command.msg.content.substr(2, message_length - 4);
-    Database::Output nations = Database::db_query(database, "SELECT display_name, description, claim_time, government_type, ideology, join_condition, role_id FROM nations WHERE nation_id = '" + nation_id + "' LIMIT 1");
+    Database::Output nations = Database::db_query(database, "SELECT display_name, description, creation_time, government_type, ideology, join_condition, role_id FROM nations WHERE nation_id = '" + nation_id + "' LIMIT 1");
 
     if (nations.size() == 0)
     {

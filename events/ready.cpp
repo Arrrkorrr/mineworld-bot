@@ -183,7 +183,7 @@ void Events::ready
 
                 ///// Subcommand /nation info. /////
                 dpp::command_option nation_info(dpp::co_sub_command, "info", "Get information about a nation.");
-                nation_info.add_option(dpp::command_option(dpp::co_string, "nation_id", "ID of the nation.", true).set_auto_complete(true));
+                nation_info.add_option(dpp::command_option(dpp::co_integer, "nation_id", "ID of the nation.", true).set_auto_complete(true));
                 nation_command.add_option(nation_info);
 
                 ///// Subcommand /nation invite. /////
@@ -193,7 +193,7 @@ void Events::ready
 
                 ///// Subcommand /nation join. /////
                 dpp::command_option nation_join(dpp::co_sub_command, "join", "Join a nation.");
-                nation_join.add_option(dpp::command_option(dpp::co_string, "nation_id", "Nation to join.", true).set_auto_complete(true));
+                nation_join.add_option(dpp::command_option(dpp::co_integer, "nation_id", "Nation to join.", true).set_auto_complete(true));
                 nation_command.add_option(nation_join);
 
                 ///// Subcommand /nation kick. /////
@@ -213,7 +213,7 @@ void Events::ready
 
                 ///// Subcommand /nation relation. /////
                 dpp::command_option nation_relation(dpp::co_sub_command, "relation", "Change relation score with another nation.");
-                nation_relation.add_option(dpp::command_option(dpp::co_string, "nation_id", "ID of the nation.", true).set_auto_complete(true));
+                nation_relation.add_option(dpp::command_option(dpp::co_integer, "nation_id", "ID of the nation.", true).set_auto_complete(true));
                 nation_relation.add_option(dpp::command_option(dpp::co_integer, "score", "New relationship score (0 ~ 100).", true));
                 nation_command.add_option(nation_relation);
 

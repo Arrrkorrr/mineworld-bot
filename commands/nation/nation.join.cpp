@@ -46,7 +46,7 @@ void Nation::join_nation
 {
     ////////////////// 1) //////////////////
     ///////// a. /////////
-    const std::string nation_id = Database::sanitize_input(database, std::get<std::string>(event.get_parameter("nation_id")));
+    const std::string nation_id = Database::sanitize_input(database, std::to_string(std::get<int64_t>(event.get_parameter("nation_id"))));
 
     ///////// b. /////////
     Database::Output nations = Database::db_query(database, "SELECT display_name, government_type, join_condition, role_id FROM nations WHERE nation_id = '" + nation_id + "' LIMIT 1");
@@ -160,7 +160,7 @@ void Nation::join_nation
         if (inviter.size() != 0)
         {
             const std::string rank = Text::get_rank(std::stoi(inviter[0]["rank"]));
-            was_invited = " They were invited by " + rank + " <@" + inviter_id + ">.";
+            was_invited = " They were invited by the " + rank + " <@" + inviter_id + "> of " + display_name + ".";
         }
     }
 
