@@ -170,8 +170,8 @@ void NationInfo::united_nations
         "**Joined United Nations**: " + joining_time + ".\n" +
         "**Inviting Nation**: " + invited_by + ".\n" +
         "**Proposition Vote**: " + vote_proposition + ".\n" +
-        "**Favorable Nations**: " + nations_for + " nations.\n" +
-        "**Nations Against** " + nations_against + " nation."
+        "**Favorable Nations**: " + nations_for + ".\n" +
+        "**Nations Against** " + nations_against + "."
     )
     .add_field
     (
