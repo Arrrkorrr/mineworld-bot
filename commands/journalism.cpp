@@ -48,7 +48,7 @@ void Commands::journalism
         .set_type(dpp::cot_text)
         .set_placeholder("Write your article here.")
         .set_min_length(20)
-        .set_max_length(4000)
+        .set_max_length(1000)
         .set_text_style(dpp::text_paragraph)
         .set_required(true)
     );

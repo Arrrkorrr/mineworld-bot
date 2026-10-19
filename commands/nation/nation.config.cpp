@@ -1,6 +1,10 @@
 #include "nation.hpp"
 
+#include "../../utils/database/database.hpp"
+
 #include <dpp/dpp.h>
+#include <dpp/message.h>
+#include <dpp/snowflake.h>
 #include <mysql/mysql.h>
 
 /*
@@ -24,5 +28,14 @@ void Nation::nation_config
     const dpp::interaction_create_t &event
 )
 {
+    const dpp::snowflake user_id = event.command.usr.id;
+    Database::Output nationality = Database::db_query(database, "SELECT nation_id FROM nationality WHERE user_id = " + std::to_string(user_id) + " LIMIT 1");
+
+    if (nationality.size() == 0)
+    {
+        event.reply(dpp::message(":warning: You can not perform this action while being stateless!").set_flags(dpp::m_ephemeral));
+        return;
+    }
+
     event.reply(dpp::message(":prohibited: Coming soon!").set_flags(dpp::m_ephemeral));
 }
