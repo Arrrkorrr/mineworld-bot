@@ -1,12 +1,18 @@
 #include "autocomplete.hpp"
 
+#include <dpp/appcommand.h>
+#include <dpp/cluster.h>
+#include <dpp/dispatcher.h>
 #include <dpp/dpp.h>
+#include <dpp/snowflake.h>
+#include <string>
+#include <vector>
 
 /*
-    Auto complete slash commands that need to display all government types.
+    Auto complete for slash commands that need to display all government types.
 
     Tasks:
-        1) Verify that it is the correct parameter being focused and typed into.
+        1) Verify that the focused input is government_type.
         2) Display all existing government types to the user.
 
     Parameters (variable_name / type / description):
@@ -23,19 +29,23 @@ void Autocomplete::government_types
 )
 {
     ////////////////// 1) //////////////////
-    bool focused = false;
+    const std::vector<dpp::command_option> command_inputs = event.options[0].options;
+    bool government_type_input_focused = false;
 
-    for (const auto &option : event.options[0].options)
-        if (option.focused && option.name == "government_type") focused = true;
+    for (const dpp::command_option &option : command_inputs)
+        if (option.focused && option.name == "government_type") government_type_input_focused = true;
 
-    if (!focused)
+    if (!government_type_input_focused)
         return;
 
     ////////////////// 2) //////////////////
+    const dpp::snowflake command_id = event.command.id;
+    const std::string command_token = event.command.token;
+
     bot.interaction_response_create
     (
-        event.command.id,
-        event.command.token,
+        command_id,
+        command_token,
         dpp::interaction_response(dpp::ir_autocomplete_reply)
             .add_autocomplete_choice(dpp::command_option_choice("Presidential Republic", "0"))
             .add_autocomplete_choice(dpp::command_option_choice("Parliamentary Republic", "1"))

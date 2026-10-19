@@ -2,27 +2,31 @@
 
 #include "../utils/database/database.hpp"
 
+#include <dpp/appcommand.h>
+#include <dpp/cluster.h>
+#include <dpp/dispatcher.h>
 #include <dpp/dpp.h>
+#include <dpp/snowflake.h>
 #include <map>
 #include <mysql/mysql.h>
 #include <string>
 
 /*
-    Auto complete slash commands that need to display all existing nations.
+    Auto complete for slash commands that need to display all existing nations.
 
     Tasks:
         1) Get the data to display back to the user.
-            a. Browse the list of event options looking for the focused option.
-            b. If we find a focused option, verify it's the correct one and register the data typed in it.
-            c. Format the query to make to the database, and use the data typed by the user to make a search.
+            a. Browse the list of the command inputs looking for the focused input.
+            b. Verify that the focused input is nation_id and get the data typed in it.
+            c. Format the query to make to the database.
             d. Make the query to the database.
         2) Display the data to the user.
-            a. Format all data that came from the request.
-            b. Return the formatted data to the user.
+            a. Format the data that came from the request.
+            b. Return data to the user.
 
     Parameters (variable_name / type / description):
         - bot       / dpp::cluster        / Client of the bot with all related information.
-        - database  / MYSQL*              / MineWorld database
+        - database  / MYSQL*              / MineWorld database.
         - event     / dpp::autocomplete_t / All information about the event.
 
     Returns (type + description):
@@ -37,47 +41,50 @@ void Autocomplete::nations
 {
     ////////////////// 1) //////////////////
     ///////// a. /////////
-    std::string focused_value;
+    std::string focused_input_data;
 
     for (const dpp::command_option &option : event.options[0].options)
     {
         if (option.focused)
         {
             ///////// b. /////////
-            if (option.name != "nation_id")
-                return;
+            if (option.name == "nation_id")
+            {
+                const std::string value = std::get<std::string>(option.value);
+                focused_input_data = Database::sanitize_input(database, value);
+            }
+            else return;
 
-            focused_value = std::get<std::string>(option.value);
             break;
         }
     }
 
     ///////// c. /////////
-    std::string query = "SELECT nation_id, display_name FROM nations states";
+    std::string query = "SELECT nation_id, display_name FROM nations";
 
-    if (!focused_value.empty())
-    {
-        focused_value = Database::sanitize_input(database, focused_value);
-        query += " WHERE (states.nation_id LIKE '%" + focused_value + "%' OR states.display_name LIKE '%" + focused_value + "%')";
-    }
+    if (!focused_input_data.empty())
+        query += " WHERE (nation_id LIKE '%" + focused_input_data + "%' OR display_name LIKE '%" + focused_input_data + "%')";
 
-    query += " ORDER BY states.display_name ASC LIMIT 25";
+    query += " ORDER BY display_name ASC LIMIT 25";
 
     ///////// d. /////////
-    Database::Output empty_nations = Database::db_query(database, query);
+    Database::Output nations = Database::db_query(database, query);
 
     ////////////////// 2) //////////////////
     ///////// a. /////////
-    dpp::interaction_response output(dpp::ir_autocomplete_reply);
+    dpp::interaction_response auto_complete_data(dpp::ir_autocomplete_reply);
 
-    for (std::map<std::string, std::string> &empty_nation : empty_nations)
+    for (std::map<std::string, std::string> &nation : nations)
     {
-        const std::string nation_id = empty_nation["nation_id"];
-        const std::string display_name = empty_nation["display_name"];
+        const std::string nation_id = nation["nation_id"];
+        const std::string display_name = nation["display_name"];
 
-        output.add_autocomplete_choice(dpp::command_option_choice(display_name + " (" + nation_id + ")", nation_id));
+        auto_complete_data.add_autocomplete_choice(dpp::command_option_choice(display_name + " (" + nation_id + ")", nation_id));
     }
 
     ///////// b. /////////
-    bot.interaction_response_create(event.command.id, event.command.token, output);
+    const dpp::snowflake command_id = event.command.id;
+    const std::string command_token = event.command.token;
+
+    bot.interaction_response_create(command_id, command_token, auto_complete_data);
 }

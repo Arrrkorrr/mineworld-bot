@@ -1,6 +1,8 @@
 #ifndef AUTOCOMPLETE_HPP
 #define AUTOCOMPLETE_HPP
 
+#include <dpp/cluster.h>
+#include <dpp/dispatcher.h>
 #include <dpp/dpp.h>
 #include <mysql/mysql.h>
 

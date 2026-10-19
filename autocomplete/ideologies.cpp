@@ -1,12 +1,18 @@
 #include "autocomplete.hpp"
 
+#include <dpp/appcommand.h>
+#include <dpp/cluster.h>
+#include <dpp/dispatcher.h>
 #include <dpp/dpp.h>
+#include <dpp/snowflake.h>
+#include <string>
+#include <vector>
 
 /*
-    Auto complete slash commands that need to display all ideologies.
+    Auto complete for slash commands that need to display all ideologies.
 
     Tasks:
-        1) Verify that it is the correct parameter being focused and typed into.
+        1) Verify that the focused input is ideology.
         2) Display all existing ideologies to the user.
 
     Parameters (variable_name / type / description):
@@ -23,19 +29,23 @@ void Autocomplete::ideologies
 )
 {
     ////////////////// 1) //////////////////
-    bool focused = false;
+    const std::vector<dpp::command_option> command_inputs = event.options[0].options;
+    bool ideology_input_focused = false;
 
-    for (const auto &option : event.options[0].options)
-        if (option.focused && option.name == "ideology") focused = true;
+    for (const dpp::command_option &option : command_inputs)
+        if (option.focused && option.name == "ideology") ideology_input_focused = true;
 
-    if (!focused)
+    if (!ideology_input_focused)
         return;
 
     ////////////////// 2) //////////////////
+    const dpp::snowflake command_id = event.command.id;
+    const std::string command_token = event.command.token;
+
     bot.interaction_response_create
     (
-        event.command.id,
-        event.command.token,
+        command_id,
+        command_token,
         dpp::interaction_response(dpp::ir_autocomplete_reply)
             .add_autocomplete_choice(dpp::command_option_choice("Liberalism", "0"))
             .add_autocomplete_choice(dpp::command_option_choice("Conservatism", "1"))
