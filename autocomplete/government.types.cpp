@@ -1,5 +1,7 @@
 #include "autocomplete.hpp"
 
+#include "../enum/government.types.hpp"
+
 #include <dpp/appcommand.h>
 #include <dpp/cluster.h>
 #include <dpp/dispatcher.h>
@@ -47,16 +49,16 @@ void Autocomplete::government_types
         command_id,
         command_token,
         dpp::interaction_response(dpp::ir_autocomplete_reply)
-            .add_autocomplete_choice(dpp::command_option_choice("Presidential Republic", "0"))
-            .add_autocomplete_choice(dpp::command_option_choice("Parliamentary Republic", "1"))
-            .add_autocomplete_choice(dpp::command_option_choice("Federal Republic", "2"))
-            .add_autocomplete_choice(dpp::command_option_choice("Monarchy", "3"))
-            .add_autocomplete_choice(dpp::command_option_choice("Constitutional Monarchy", "4"))
-            .add_autocomplete_choice(dpp::command_option_choice("Confederation", "5"))
-            .add_autocomplete_choice(dpp::command_option_choice("Military Rule", "6"))
-            .add_autocomplete_choice(dpp::command_option_choice("Anarchy", "7"))
-            .add_autocomplete_choice(dpp::command_option_choice("Oligarchy", "8"))
-            .add_autocomplete_choice(dpp::command_option_choice("Aristocracy", "9"))
-            .add_autocomplete_choice(dpp::command_option_choice("One-Party State", "10"))
+            .add_autocomplete_choice(dpp::command_option_choice("Presidential Republic", std::to_string(PRESIDENTIAL_REPUBLIC)))
+            .add_autocomplete_choice(dpp::command_option_choice("Parliamentary Republic", std::to_string(PARLIAMENTARY_REPUBLIC)))
+            .add_autocomplete_choice(dpp::command_option_choice("Federal Republic", std::to_string(FEDERAL_REPUBLIC)))
+            .add_autocomplete_choice(dpp::command_option_choice("Monarchy", std::to_string(MONARCHY)))
+            .add_autocomplete_choice(dpp::command_option_choice("Constitutional Monarchy", std::to_string(CONSTITUTIONAL_MONARCHY)))
+            .add_autocomplete_choice(dpp::command_option_choice("Confederation", std::to_string(CONFEDERATION)))
+            .add_autocomplete_choice(dpp::command_option_choice("Military Rule", std::to_string(MILITARY_RULE)))
+            .add_autocomplete_choice(dpp::command_option_choice("Anarchy", std::to_string(ANARCHY)))
+            .add_autocomplete_choice(dpp::command_option_choice("Oligarchy", std::to_string(OLIGARCHY)))
+            .add_autocomplete_choice(dpp::command_option_choice("Aristocracy", std::to_string(ARISTOCRACY)))
+            .add_autocomplete_choice(dpp::command_option_choice("One-Party State", std::to_string(ONE_PARTY_STATE)))
     );
 }

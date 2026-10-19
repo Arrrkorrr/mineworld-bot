@@ -1,0 +1,18 @@
+#ifndef ENUM_IDEOLOGIES_HPP
+#define ENUM_IDEOLOGIES_HPP
+
+enum Ideologies
+{
+    LIBERALISM = 0,
+    CONSERVATISM = 1,
+    SOCIALISM = 2,
+    COMMUNISM = 3,
+    NATIONALISM = 4,
+    CENTRISM = 5,
+    MILITARISM = 6,
+    IMPERIALISM = 7,
+    PACIFISM = 8,
+    NEUTRALISM = 9
+};
+
+#endif

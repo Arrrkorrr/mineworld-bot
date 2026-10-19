@@ -1,0 +1,11 @@
+#ifndef ENUMERATIONS_HPP
+#define ENUMERATIONS_HPP
+
+enum NationStatus
+{
+    EXISTING_NATION = 0,
+    COLLAPSED_NATION = 1,
+    MODERATION_TAKE_DOWN = 2
+};
+
+#endif

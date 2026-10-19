@@ -1,0 +1,12 @@
+#ifndef ENUM_INVITE_PERMISSIONS_HPP
+#define ENUM_INVITE_PERMISSIONS_HPP
+
+enum InvitePermissions
+{
+    EVERYONE = 0,
+    GOVERNMENT_ONLY = 1,
+    PRIME_MINISTER_MINIMUM = 2,
+    LEADER_ONLY = 3
+};
+
+#endif

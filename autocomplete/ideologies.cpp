@@ -1,5 +1,7 @@
 #include "autocomplete.hpp"
 
+#include "../enum/ideologies.hpp"
+
 #include <dpp/appcommand.h>
 #include <dpp/cluster.h>
 #include <dpp/dispatcher.h>
@@ -47,15 +49,15 @@ void Autocomplete::ideologies
         command_id,
         command_token,
         dpp::interaction_response(dpp::ir_autocomplete_reply)
-            .add_autocomplete_choice(dpp::command_option_choice("Liberalism", "0"))
-            .add_autocomplete_choice(dpp::command_option_choice("Conservatism", "1"))
-            .add_autocomplete_choice(dpp::command_option_choice("Socialism", "2"))
-            .add_autocomplete_choice(dpp::command_option_choice("Communism", "3"))
-            .add_autocomplete_choice(dpp::command_option_choice("Nationalism", "4"))
-            .add_autocomplete_choice(dpp::command_option_choice("Centrism", "5"))
-            .add_autocomplete_choice(dpp::command_option_choice("Militarism", "6"))
-            .add_autocomplete_choice(dpp::command_option_choice("Imperialism", "7"))
-            .add_autocomplete_choice(dpp::command_option_choice("Pacifism", "8"))
-            .add_autocomplete_choice(dpp::command_option_choice("Neutralism", "9"))
+            .add_autocomplete_choice(dpp::command_option_choice("Liberalism", std::to_string(LIBERALISM)))
+            .add_autocomplete_choice(dpp::command_option_choice("Conservatism", std::to_string(CONSERVATISM)))
+            .add_autocomplete_choice(dpp::command_option_choice("Socialism", std::to_string(SOCIALISM)))
+            .add_autocomplete_choice(dpp::command_option_choice("Communism", std::to_string(COMMUNISM)))
+            .add_autocomplete_choice(dpp::command_option_choice("Nationalism", std::to_string(NATIONALISM)))
+            .add_autocomplete_choice(dpp::command_option_choice("Centrism", std::to_string(CENTRISM)))
+            .add_autocomplete_choice(dpp::command_option_choice("Militarism", std::to_string(MILITARISM)))
+            .add_autocomplete_choice(dpp::command_option_choice("Imperialism", std::to_string(IMPERIALISM)))
+            .add_autocomplete_choice(dpp::command_option_choice("Pacifism", std::to_string(PACIFISM)))
+            .add_autocomplete_choice(dpp::command_option_choice("Neutralism", std::to_string(NEUTRALISM)))
     );
 }

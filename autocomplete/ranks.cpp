@@ -1,5 +1,7 @@
 #include "autocomplete.hpp"
 
+#include "../enum/ranks.hpp"
+
 #include <dpp/appcommand.h>
 #include <dpp/cluster.h>
 #include <dpp/dispatcher.h>
@@ -47,10 +49,10 @@ void Autocomplete::ranks
         command_id,
         command_token,
         dpp::interaction_response(dpp::ir_autocomplete_reply)
-            .add_autocomplete_choice(dpp::command_option_choice("Citizen", "0"))
-            .add_autocomplete_choice(dpp::command_option_choice("Military", "1"))
-            .add_autocomplete_choice(dpp::command_option_choice("Minister", "2"))
-            .add_autocomplete_choice(dpp::command_option_choice("Prime Minister", "3"))
-            .add_autocomplete_choice(dpp::command_option_choice("Head of State", "4"))
+            .add_autocomplete_choice(dpp::command_option_choice("Citizen", std::to_string(CITIZEN)))
+            .add_autocomplete_choice(dpp::command_option_choice("Military", std::to_string(MILITARY)))
+            .add_autocomplete_choice(dpp::command_option_choice("Minister", std::to_string(MINISTER)))
+            .add_autocomplete_choice(dpp::command_option_choice("Prime Minister", std::to_string(PRIME_MINISTER)))
+            .add_autocomplete_choice(dpp::command_option_choice("Head of State", std::to_string(HEAD_OF_STATE)))
     );
 }
