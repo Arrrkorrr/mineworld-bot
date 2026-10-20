@@ -1,36 +1,15 @@
 #ifndef BUTTONS_HPP
 #define BUTTONS_HPP
 
-#include <dpp/dpp.h>
-#include <mysql/mysql.h>
-#include <string>
+#include "journalism/journalism.hpp"
 
 namespace Buttons
 {
     //////////////////////////
-    ///// journalism.cpp /////
+    ///// journalism.hpp /////
     //////////////////////////
 
-    void journalism_delete
-    (
-        dpp::cluster        &bot,
-        dpp::button_click_t &event
-    );
-
-    void journalism_censor
-    (
-        dpp::cluster        &bot,
-        MYSQL*              &database,
-        dpp::button_click_t &event,
-        const std::string   &ID
-    );
-
-    void journalism_blacklist
-    (
-        dpp::cluster        &bot,
-        MYSQL*              &database,
-        dpp::button_click_t &event
-    );
+    namespace Journalism = ::Journalism;
 }
 
 #endif

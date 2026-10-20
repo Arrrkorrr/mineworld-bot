@@ -1,10 +1,25 @@
 #ifndef ENUM_JOURNALISM_HPP
 #define ENUM_JOURNALISM_HPP
 
-enum Journalism
+enum Publishers
 {
     WHITELIST = 0,
     BLACKLIST = 1
+};
+
+enum PostVisibility
+{
+    VISIBLE_POST = 0,
+    REMOVED_POST = 1,
+    CENSORED_POST = 2,
+    MODERATION_TAKE_DOWN = 3
+};
+
+enum FreedomRatingScores
+{
+    CENSORED_POST_SCORE_HIT = 3,
+    BLACKLISTED_USER_SCORE_HIT = 5,
+    FREE_POST_SCORE = 1
 };
 
 #endif

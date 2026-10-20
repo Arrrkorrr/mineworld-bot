@@ -64,7 +64,7 @@ void Autocomplete::nations
     std::string query = "SELECT nation_id, display_name FROM nations";
 
     if (!focused_input_data.empty())
-        query += " WHERE deleted = " + std::to_string(EXISTING_NATION) + " (nation_id LIKE '%" + focused_input_data + "%' OR display_name LIKE '%" + focused_input_data + "%')";
+        query += " WHERE deleted = '" + std::to_string(EXISTING_NATION) + "' (nation_id LIKE '%" + focused_input_data + "%' OR display_name LIKE '%" + focused_input_data + "%')";
 
     query += " ORDER BY display_name ASC LIMIT 25";
 

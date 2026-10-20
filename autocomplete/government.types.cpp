@@ -1,6 +1,6 @@
 #include "autocomplete.hpp"
 
-#include "../enum/government.types.hpp"
+#include "../enum/governments.hpp"
 
 #include <dpp/appcommand.h>
 #include <dpp/cluster.h>

@@ -1,5 +1,5 @@
-#ifndef ENUM_GOVERNMENT_TYPES_HPP
-#define ENUM_GOVERNMENT_TYPES_HPP
+#ifndef ENUM_GOVERNMENTS_HPP
+#define ENUM_GOVERNMENTS_HPP
 
 enum GovernmentTypes
 {
@@ -14,6 +14,20 @@ enum GovernmentTypes
     OLIGARCHY = 8,
     ARISTOCRACY = 9,
     ONE_PARTY_STATE = 10
+};
+
+enum Ideologies
+{
+    LIBERALISM = 0,
+    CONSERVATISM = 1,
+    SOCIALISM = 2,
+    COMMUNISM = 3,
+    NATIONALISM = 4,
+    CENTRISM = 5,
+    MILITARISM = 6,
+    IMPERIALISM = 7,
+    PACIFISM = 8,
+    NEUTRALISM = 9
 };
 
 #endif

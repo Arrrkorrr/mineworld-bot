@@ -178,9 +178,12 @@ CREATE TABLE publications
     post_id BIGINT PRIMARY KEY AUTO_INCREMENT,
     nation_id BIGINT NOT NULL,
     user_id BIGINT NOT NULL,
-    visible TINYINT CHECK (visible BETWEEN 0 AND 2) NOT NULL,
+    message_id BIGINT NOT NULL,
+    visible TINYINT CHECK (visible BETWEEN 0 AND 3) NOT NULL,
     title VARCHAR(50) NOT NULL,
     content VARCHAR(1000) NOT NULL,
+    top_right_image_url TEXT,
+    bottom_image_url TEXT,
     publication_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
