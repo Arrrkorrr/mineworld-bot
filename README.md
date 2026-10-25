@@ -19,20 +19,32 @@ DB_PASSWORD=database_password
 ```
 
 # 🖥️ Database
-- **config** (member_role, welcome_channel, world_channel, journalism_channel).
+- **admin_shop** (<ins>listing_id</ins>, item_id, active, base_price, max_stock, current_stock, auto_restock, last_restock_time).
+- **config** (member_role, welcome_channel, world_channel, journalism_channel, moderators_channel, mineworld_time).
+- **economies** (<ins>nation_id</ins>, tux_balance).
+- **gdp** (<ins>(nation_id, year)</ins>, gdp).
+- **governments** (<ins>nation_id</ins>, government_type, ideology, leader_count, government_count, last_leader_change, last_government_change).
+- **immigration** (<ins>nation_id</ins>, join_condition, invite_permission).
 - **invitations** (<ins>(user_id, nation_id)</ins>, invited_by, creation_time).
+- **items** (<ins>item_id</ins>, display_name, resolutions).
 - **journalism** (<ins>user_id</ins>, status).
-- **laws** (<ins>resolution_id</ins>, pending, nation_id, law_title, law_details, law_adoption_time, vote_start, vote_duration, vote_end, votes_for, votes_against)
-- **nationality** (<ins>user_id</ins>, nation_id, rank, last_rank_update, joining_time).
-- **nations** (<ins>nation_id</ins>, display_name, description, role_id, join_condition, invite_permission, creation_time, tux_balance, government_type, ideology, leadership_changes, 
-               last_leadership_change, government_changes, last_government_change, media_freedom, media_posts, last_post, censored_posts, media_whitelist, media_blacklist, 
-               last_manual_censorship, last_automatic_censorship, nuclear_state, acquired_nuclear_time, veto_state, veto_usage_count, last_veto_usage, resolutions_count, last_resolution, 
-               passed_resolutions, last_passed_resolution).
-- **news** (<ins>news_id</ins>, title, content).
-- **relations** (<ins>(defining_nation, targeted_nation)</ins>, score).
-- **sanctions** (<ins>resolution_id</ins>, pending, nation_id, sanctioned_nation, sanction_type, sanction_title, sanction_details, sanction_amount, sanction_start, sanction_duration, 
-                 sanction_end,vote_start, vote_duration, vote_end, votes_for, votes_against).
-- **un_membership** (<ins>nation_id</ins>, pending, invited_by, joining_time, vote_start, vote_duration, vote_end, votes_for, votes_against).
+- **laws_resolutions** (<ins>resolution_id</ins>, title, details).
+- **loans** (<ins>loan_id</ins>, nation_id, tux_amount, interests, paid, loan_time).
+- **market** (<ins>listing_id</ins>, item_id, user_id, visibility, price, quantity, listing_creation_time).
+- **media** (<ins>nation_id</ins>, freedom_rating, blacklist, whitelist, last_manual_censorship, last_automatic_censorship).
+- **membership_resolutions** (<ins>resolution_id</ins>, invited_nation).
+- **nationalities** (<ins>user_id</ins>, nation_id, rank, joining_time, last_rank_modification).
+- **nations** (<ins>nation_id</ins>, display_name, description, deleted, role_id, creation_time).
+- **news** (<ins>news_id</ins>, title, summary, article, release_date).
+- **players** (<ins>user_id</ins>, username, password, discord_id, minecraft_uuid).
+- **publications** (<ins>post_id</ins>, nation_id, user_id, message_id, visible, title, content, top_right_image_url, bottom_image_url, publication_time).
+- **relations** (<ins>(nation_id, targeted_nation)</ins>, score).
+- **resolutions** (<ins>resolution_id</ins>, pending, adopted, vetoed_by, nation_id, type, vote_beginning, vote_duration).
+- **sanctions_resolutions** (<ins>resolution_id</ins>, targeted_nation, type, title, details, amount, duration).
+- **shop_prices_history** (<ins>(listing_id, price_update_time)</ins>, base_price, actual_price).
+- **united_nations** (<ins>nation_id</ins>, veto_state, veto_count, last_veto).
+- **votes** (<ins>(resolution_id, nation_id)</ins>, voted_for, voting_time).
+- **warfare** (<ins>nation_id</ins>, nuclear_state, nuclear_acquisition_time).
 
 # 📥 Installation
 1) Download the project. <br/>
