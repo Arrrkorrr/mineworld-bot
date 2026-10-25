@@ -1,16 +1,19 @@
 #include "commands.hpp"
 
+#include <dpp/cluster.h>
+#include <dpp/dispatcher.h>
 #include <dpp/dpp.h>
+#include <dpp/message.h>
 #include <string>
 
 /*
     Get the latency of the bot.
 
     Tasks:
-        1) Get the bot Discord client using the first shard.
-        2) Get and show the bot latency.
-            a. Get the latency from the shard and multiply it by one thousand as it returns a value in seconds.
-            b. If the bot just started, the query fails for some reason.
+        1) Get bot's Discord client using the first shard.
+        2) Display bot latency.
+            a. Get the latency from shard and convert it to ms.
+            b. If the bot just started, the query may fail.
 
     Parameters (variable_name / type / description):
         - bot       / dpp::cluster              / Client of the bot with all related information.
@@ -45,5 +48,5 @@ void Commands::ping
         return;
     }
 
-    event.reply(dpp::message(":ping_pong: Bot latency: " + std::to_string((int)latency) + "ms.").set_flags(dpp::m_ephemeral));
+    event.reply(dpp::message(":ping_pong: Bot latency: " + std::to_string((int) latency) + "ms.").set_flags(dpp::m_ephemeral));
 }

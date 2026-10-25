@@ -1,13 +1,12 @@
 #include "commands.hpp"
 
+#include <dpp/dispatcher.h>
 #include <dpp/dpp.h>
+#include <dpp/message.h>
 #include <string>
 
 /*
-    Explains how to play to MineWorld.
-
-    Tasks:
-        1) Reply to the interaction.
+    Explains how to join MineWorld.
 
     Parameters (variable_name / type / description):
         - event     / dpp::interaction_create_t / All information about the event.

@@ -3,7 +3,11 @@
 #include "../../utils/database/database.hpp"
 #include "../../utils/text/text.hpp"
 
+#include <dpp/cluster.h>
+#include <dpp/colors.h>
+#include <dpp/dispatcher.h>
 #include <dpp/dpp.h>
+#include <dpp/message.h>
 #include <map>
 #include <mysql/mysql.h>
 #include <string>
@@ -12,16 +16,17 @@
     Display information and stats of a nation.
 
     Tasks:
-        1) Get the nation ID from the command parameter.
-        2) Verify that the nation exists.
-        3) Handle the information request.
-            a. Count the amount of members available for this nation ID.
-            b. Prepare some data and formatting the information.
-            c. Set the embed and select menu to be sent.
+        1) Prepare information.
+            a. Get nation ID from command parameter.
+            b. Retrieve some information about the nation.
+            c. Get the amount of members in the nation.
+        2) Send information to user.
+            a. Format information.
+            b. Construct embed.
 
     Parameters (variable_name / type / description):
         - bot       / dpp::cluster              / Client of the bot with all related information.
-        - database  / MYSQL*                    / MineWorld database
+        - database  / MYSQL*                    / MineWorld database.
         - event     / dpp::interaction_create_t / All information about the event.
 
     Returns (type + description):
@@ -35,52 +40,67 @@ void Nation::nation_info
 )
 {
     ////////////////// 1) //////////////////
+    ///////// a. /////////
     const std::string nation_id = std::to_string(std::get<int64_t>(event.get_parameter("nation_id")));
 
-    ////////////////// 2) //////////////////
-    Database::Output nations = Database::db_query(database, "SELECT display_name, description, creation_time, government_type, ideology, join_condition, role_id FROM nations WHERE nation_id = '" + nation_id + "' LIMIT 1");
+    ///////// b. /////////
+    const std::string query =
+    (
+        std::string("SELECT nations.display_name, nations.description, nations.creation_time, nations.role_id, governments.government_type, governments.ideology, immigration.join_condition ") +
+                    "FROM nations " +
+                    "JOIN governments ON governments.nation_id = nations.nation_id " +
+                    "JOIN immigration ON immigration.nation_id = nations.nation_id " +
+                    "WHERE nations.nation_id = '" + nation_id + "' LIMIT 1"
+    );
 
-    if (nations.size() == 0)
+    Database::Output nation = Database::db_query(database, query);
+
+    if (nation.size() == 0)
     {
         event.reply(dpp::message(":prohibited: Nation ID `" + nation_id + "` does not exist.").set_flags(dpp::m_ephemeral));
         return;
     }
 
-    ////////////////// 3) //////////////////
+    ///////// c. /////////
+    Database::Output nation_members = Database::db_query(database, "SELECT 1 FROM nationality WHERE nation_id = '" + nation_id + "'");
+
+    ////////////////// 2) //////////////////
     ///////// a. /////////
-    Database::Output members = Database::db_query(database, "SELECT 1 FROM nationality WHERE nation_id = '" + nation_id + "'");
+    const std::string government_type = Text::get_government_type(std::stoi(nation[0]["government_type"]));
+    const std::string ideology = Text::get_ideology(std::stoi(nation[0]["ideology"]));
+    const std::string join_condition = Text::get_join_condition(std::stoi(nation[0]["join_condition"]));
+    const std::string nation_name = nation[0]["display_name"];
+    const std::string nation_creation_time = (nation[0]["creation_time"] == "0" ? "Never" : "<t:" + nation[0]["creation_time"] + ":f>");
+    const std::string nation_description = nation[0]["description"];
+    const std::string nation_members_count = std::to_string(nation_members[0].size());
+    const std::string nation_role = (nation[0]["role_id"] == "0" ? "No role generated yet" : "<@&" + nation[0]["role_id"] + "> ||" + nation[0]["role_id"] + "||");
 
     ///////// b. /////////
-    const std::string creation_time = (nations[0]["creation_time"] == "0" ? "Never" : "<t:" + nations[0]["creation_time"] + ":f>");
-    const std::string display_name = nations[0]["display_name"];
-    const std::string government_type = Text::get_government_type(std::stoi(nations[0]["government_type"]));
-    const std::string ideology = Text::get_ideology(std::stoi(nations[0]["ideology"]));
-    const std::string join_condition = Text::get_join_condition(std::stoi(nations[0]["join_condition"]));
-    const std::string role_id = (nations[0]["role_id"] == "0" ? "No role generated yet" : "<@&" + nations[0]["role_id"] + "> ||" + nations[0]["role_id"] + "||");
+    const std::string executer_avatar_url = event.command.usr.get_avatar_url();
+    const std::string executer_username = event.command.usr.username;
 
-    ///////// c. /////////
     const dpp::embed embed = dpp::embed()
     .set_color(dpp::colors::cream_white)
-    .set_title(display_name)
+    .set_title(nation_name)
     .add_field
     (
         ":information_source: Description",
-        nations[0]["description"]
+        nation_description
     )
     .add_field
     (
         ":eye: Overview",
 
-        "**Display Name**: " + display_name + ".\n" +
+        "**Display Name**: " + nation_name + ".\n" +
         "**Nation ID**: " + nation_id + ".\n" +
         "**Government**: " + government_type + ".\n" +
         "**Ideology**: " + ideology + ".\n" +
-        "**Member count**: " + std::to_string(members.size()) + " member(s).\n" +
-        "**Role**: " + role_id + ".\n" +
-        "**Became active**: " + creation_time + ".\n" +
+        "**Member count**: " + nation_members_count+ " member(s).\n" +
+        "**Role**: " + nation_role + ".\n" +
+        "**Became active**: " + nation_creation_time + ".\n" +
         "**Join condition**: " + join_condition + "."
     )
-    .set_footer(dpp::embed_footer().set_icon(event.command.usr.get_avatar_url()).set_text("Requested by " + event.command.usr.username + "."));
+    .set_footer(dpp::embed_footer().set_icon(executer_avatar_url).set_text("Requested by " + executer_username + "."));
 
     const dpp::component select_menu = dpp::component()
     .add_component (

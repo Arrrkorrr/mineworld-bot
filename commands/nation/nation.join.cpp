@@ -1,12 +1,19 @@
 #include "nation.hpp"
 
-#include "../../config/enumerations.hpp"
+#include "../../enum/immigration.hpp"
+#include "../../enum/ranks.hpp"
 #include "../../utils/database/database.hpp"
 #include "../../utils/logs/logs.hpp"
 #include "../../utils/miscellaneous/miscellaneous.hpp"
 #include "../../utils/text/text.hpp"
 
+#include <dpp/cluster.h>
+#include <dpp/colors.h>
+#include <dpp/dispatcher.h>
 #include <dpp/dpp.h>
+#include <dpp/message.h>
+#include <dpp/restresults.h>
+#include <dpp/snowflake.h>
 #include <mysql/mysql.h>
 #include <string>
 
@@ -14,24 +21,27 @@
     Join a nation.
 
     Tasks:
-        1) We start with some basic verification.
-            a. Sanitize user input to prevent SQL injections as much as possible.
-            b. Try to get some information about the nation from the database to check that it exists.
-            c. Verify that the nation was not set as "closed" by the government.
-            d. Try to get some information about the user in the "nationality" table. If we get some data back, it means that the user is already part of a nation.
-            e. Try to get some information about the nation that the user is part of to make a clean detailed error message.
-        2) We process the joining request.
-            a. If the nation is set as "opened" by the government, we immediately register the user as citizen of the nation in the database.
-            b. If the nation is set as "on invitation", we verify that the user has a pending invitation.
-            c. Verify that the invitation has not expired yet. If it expired, we directly delete the invitation from the database.
-            d. Try to give the nation role to the user.
-            e. Get bot config to retrieve essentials information for later.
-            f. Check that the "gossip" channel and role are valid, and send an embed notifying other players of the new citizen.
-               We also make a "dynamic" notification in case the user joined with an invitation to precise who invited them.
+        1) Some verification.
+            a. Verify that the executer has a MineWorld account linked to their Discord account.
+            b. Get nation ID from command parameter and sanitize it.
+            c. Get information about the nation.
+            d. Verify that the nation is not closed.
+            e. Verify that the executer is not already part of another nation.
+        2) Process joining request.
+            a. Grant citizenship to the executer if the nation is opened.
+            b. If the nation is on invitation, verify that the executer has been invited.
+            c. Verify that the invitation did not expire.
+            d. Grant citizenship to the executer.
+            e. Get information about the user who invited the executer.
+            f. Add the nation role to the executer.
+        3) Notify the world.
+            a. Get bot configuration.
+            b. Format text in case the executer was invited by someone.
+            c. Send a notification embed in the world channel.
 
     Parameters (variable_name / type / description):
         - bot       / dpp::cluster              / Client of the bot with all related information.
-        - database  / MYSQL*                    / MineWorld database
+        - database  / MYSQL*                    / MineWorld database.
         - event     / dpp::interaction_create_t / All information about the event.
 
     Returns (type + description):
@@ -46,48 +56,66 @@ void Nation::join_nation
 {
     ////////////////// 1) //////////////////
     ///////// a. /////////
-    const std::string nation_id = Database::sanitize_input(database, std::to_string(std::get<int64_t>(event.get_parameter("nation_id"))));
+    const dpp::snowflake executer_discord_id = std::to_string(event.command.usr.id);
+    Database::Output executer_credentials = Database::db_query(database, "SELECT user_id FROM players WHERE discord_id = '" + std::to_string(executer_discord_id) + "' LIMIT 1");
+
+    if (executer_credentials.size() == 0)
+    {
+        event.reply(dpp::message(":prohibited: No MineWorld account is linked to your Discord account. Create a MineWorld account using `/account register` or link your already existing account with `/account discord`.").set_flags(dpp::m_ephemeral));
+        return;
+    }
 
     ///////// b. /////////
-    Database::Output nations = Database::db_query(database, "SELECT display_name, government_type, join_condition, role_id FROM nations WHERE nation_id = '" + nation_id + "' LIMIT 1");
+    const std::string nation_id = Database::sanitize_input(database, std::to_string(std::get<int64_t>(event.get_parameter("nation_id"))));
 
-    if (nations.size() == 0)
+    ///////// c. /////////
+    const std::string query =
+    (
+        std::string("SELECT nations.display_name, nations.role_id, governments.government_type, immigration.join_condition, ") +
+                    "FROM nations " +
+                    "JOIN governments ON governments.nation_id = nations.nation_id " +
+                    "JOIN immigration ON immigration.nation_id = nations.nation_id " +
+                    "WHERE nations.nation_id = '" + nation_id + "' LIMIT 1"
+    );
+
+    Database::Output nation = Database::db_query(database, query);
+
+    if (nation.size() == 0)
     {
         event.reply(dpp::message(":prohibited: Nation `" + nation_id + "` does not exist.").set_flags(dpp::m_ephemeral));
         return;
     }
 
-    ///////// c. /////////
-    const std::string government_type = Text::get_government_type(std::stoi(nations[0]["government_type"]));
-    const int join_condition = std::stoi(nations[0]["join_condition"]);
-    const std::string display_name = nations[0]["display_name"];
+    ///////// d. /////////
+    const std::string government_type = Text::get_government_type(std::stoi(nation[0]["governments.government_type"]));
+    const int join_condition = std::stoi(nation[0]["immigration.join_condition"]);
+    const std::string nation_name = nation[0]["nations.display_name"];
 
     if (join_condition == CLOSED)
     {
-        event.reply(dpp::message(":prohibited: The " + government_type + " of " + display_name + " is currently closed to anyone.").set_flags(dpp::m_ephemeral));
+        event.reply(dpp::message(":prohibited: The " + government_type + " of " + nation_name + " is currently closed to anyone.").set_flags(dpp::m_ephemeral));
         return;
     }
 
-    ///////// d. /////////
-    const dpp::snowflake user_id = event.command.usr.id;
-    Database::Output nationality = Database::db_query(database, "SELECT nation_id, rank FROM nationality WHERE user_id = '" + std::to_string(user_id) + "' LIMIT 1");
+    ///////// e. /////////
+    const std::string executer_user_id = executer_credentials[0]["user_id"];
+    Database::Output executer_nationality = Database::db_query(database, "SELECT nation_id, rank FROM nationality WHERE user_id = '" + executer_user_id + "' LIMIT 1");
 
-    if (nationality.size() != 0)
+    if (executer_nationality.size() != 0)
     {
-        ///////// e. /////////
-        const std::string current_nation_id = nationality[0]["nation_id"];
-        Database::Output current = Database::db_query(database, "SELECT display_name, government_type FROM nations WHERE nation_id = '" + current_nation_id + "' LIMIT 1");
+        const std::string executer_nation_id = executer_nationality[0]["nation_id"];
+        Database::Output executer_nation = Database::db_query(database, "SELECT nations.display_name, governments.government_type FROM nations JOIN governments ON governments.nation_id = nations.nation_id WHERE nation_id = '" + executer_nation_id + "' LIMIT 1");
 
-        if (current.size() == 0)
+        if (executer_nation.size() == 0)
         {
-            Logs::log("Warning: Bad nation_id " + current_nation_id + " -> /nation claim.");
+            Logs::log("Warning: Bad nation_id " + executer_nation_id + " -> /nation claim.");
             return event.reply(dpp::message(":prohibited: You already part of another nation.").set_flags(dpp::m_ephemeral));
         }
 
-        const std::string current_name = current[0]["display_name"];
-        const std::string current_gov_type = current[0]["government_type"];
+        const std::string executer_nation_name = executer_nation[0]["nations.display_name"];
+        const std::string executer_government_type = executer_nation[0]["governments.government_type"];
 
-        return event.reply(dpp::message(":prohibited: You are already part of the " + current_gov_type + " of " + current_name + ".").set_flags(dpp::m_ephemeral));
+        return event.reply(dpp::message(":prohibited: You are already part of the " + executer_nation_name + " of " + executer_nation_name + ".").set_flags(dpp::m_ephemeral));
     }
 
     ////////////////// 2) //////////////////
@@ -97,49 +125,57 @@ void Nation::join_nation
 
     if (join_condition == OPENED)
     {
-        Database::db_query(database, "INSERT INTO nationality (user_id, nation_id, rank, last_rank_update, joining_time) VALUES ('" + std::to_string(user_id) + "', '" + nation_id + "', '" + citizen + "', '" + now + "', '" + now + "')");
-        event.reply(dpp::message(":hammer_pick: You are now a citizen of the " + government_type + " of " + display_name + ".").set_flags(dpp::m_ephemeral));
+        Database::db_query(database, "INSERT INTO nationality (user_id, nation_id, rank, last_rank_update, joining_time) VALUES ('" + executer_user_id + "', '" + nation_id + "', '" + citizen + "', '" + now + "', '" + now + "')");
+        event.reply(dpp::message(":hammer_pick: You are now a citizen of the " + government_type + " of " + nation_name + ".").set_flags(dpp::m_ephemeral));
     }
 
     ///////// b. /////////
-    std::string inviter_id;
+    std::string inviter_user_id, inviter_discord_id;
 
     if (join_condition == ON_INVITATION)
     {
-        Database::Output invitation = Database::db_query(database, "SELECT invited_by, creation_time FROM invitations WHERE user_id = '" + std::to_string(user_id) + "' AND nation_id = '" + nation_id + "' LIMIT 1");
+        Database::Output invitation = Database::db_query(database, "SELECT invited_by, creation_time FROM invitations WHERE user_id = '" + executer_user_id + "' AND nation_id = '" + nation_id + "' LIMIT 1");
 
         if (invitation.size() == 0)
         {
-            event.reply(dpp::message(":prohibited: You need an invitation to join the " + government_type + " of " + display_name + ".").set_flags(dpp::m_ephemeral));
+            event.reply(dpp::message(":prohibited: You need an invitation to join the " + government_type + " of " + nation_name + ".").set_flags(dpp::m_ephemeral));
             return;
         }
 
         ///////// c. /////////
         const int64_t invitation_time = std::stoll(invitation[0]["creation_time"]);
-        const int expiration = 86400; // 24 hours.
+        const int expiration_delay = 86400; // 24 hours.
 
-        if (invitation_time + expiration < std::stoll(now))
+        if (invitation_time + expiration_delay < std::stoll(now))
         {
-            Database::db_query(database, "DELETE FROM invitations WHERE user_id = '" + std::to_string(user_id) + "' AND nation_id = '" + nation_id + "'");
-            return event.reply(dpp::message(":prohibited: Your invitation to join the " + government_type + " of " + display_name + " has expired.").set_flags(dpp::m_ephemeral));
+            Database::db_query(database, "DELETE FROM invitations WHERE user_id = '" + executer_user_id + "' AND nation_id = '" + nation_id + "'");
+            return event.reply(dpp::message(":prohibited: Your invitation to join the " + government_type + " of " + nation_name + " has expired.").set_flags(dpp::m_ephemeral));
         }
 
-        Database::db_query(database, "INSERT INTO nationality (user_id, nation_id, rank, last_rank_update, joining_time) VALUES ('" + std::to_string(user_id) + "', '" + nation_id + "', '" + citizen + "', '" + now + "', '" + now + "')");
-        event.reply(dpp::message(":hammer_pick: You are now a citizen of the " + government_type + " of " + display_name + ".").set_flags(dpp::m_ephemeral));
-        inviter_id = invitation[0]["invited_by"];
+        ///////// d. /////////
+        Database::db_query(database, "INSERT INTO nationality (user_id, nation_id, rank, last_rank_update, joining_time) VALUES ('" + executer_user_id + "', '" + nation_id + "', '" + citizen + "', '" + now + "', '" + now + "')");
+        event.reply(dpp::message(":hammer_pick: You are now a citizen of the " + government_type + " of " + nation_name + ".").set_flags(dpp::m_ephemeral));
+
+        ///////// e. /////////
+        inviter_user_id = invitation[0]["invited_by"];
+        Database::Output inviter_credentials = Database::db_query(database, "SELECT discord_id FROM players WHERE user_id = '" + inviter_user_id + "' LIMIT 1");
+
+        if (inviter_credentials.size() != 0)
+            inviter_discord_id = inviter_credentials[0]["discord_id"];
     }
 
-    ///////// d. /////////
+    ///////// f. /////////
     const dpp::snowflake guild_id = event.command.guild_id;
-    const dpp::snowflake role_id = dpp::snowflake(nations[0]["role_id"]);
+    const dpp::snowflake nation_role_id = dpp::snowflake(nation[0]["nations.role_id"]);
 
-    bot.guild_member_add_role(guild_id, user_id, role_id, [role_id, user_id](const dpp::confirmation_callback_t &callback)
+    bot.guild_member_add_role(guild_id, executer_discord_id, nation_role_id, [nation_role_id, executer_discord_id](const dpp::confirmation_callback_t &callback)
     {
         if (callback.is_error())
-            Logs::log("Warning: Failed to give role " + std::to_string(role_id) + " to " + std::to_string(user_id) + " with error " + callback.get_error().human_readable + " -> /nation join.");
+            Logs::log("Warning: Failed to give role " + std::to_string(nation_role_id) + " to " + std::to_string(executer_discord_id) + " with error " + callback.get_error().human_readable + " -> /nation join.");
     });
 
-    ///////// e. /////////
+    ////////////////// 3) //////////////////
+    ///////// a. /////////
     Database::Output config = Database::db_query(database, "SELECT world_channel FROM config LIMIT 1");
 
     if (config.size() == 0)
@@ -150,24 +186,25 @@ void Nation::join_nation
 
     const dpp::snowflake world_channel = dpp::snowflake(config[0]["world_channel"]);
 
-    ///////// f. /////////
-    std::string was_invited;
+    ///////// b. /////////
+    std::string was_invited_text;
 
     if (join_condition == ON_INVITATION)
     {
-        Database::Output inviter = Database::db_query(database, "SELECT rank FROM nationality WHERE user_id = '" + inviter_id + "' AND nation_id = '" + nation_id + "' LIMIT 1");
+        Database::Output inviter_nationality = Database::db_query(database, "SELECT rank FROM nationalities JOIN WHERE user_id = '" + inviter_user_id + "' AND nation_id = '" + nation_id + "' LIMIT 1");
 
-        if (inviter.size() != 0)
+        if (inviter_nationality.size() != 0)
         {
-            const std::string rank = Text::get_rank(std::stoi(inviter[0]["rank"]));
-            was_invited = " They were invited by the " + rank + " <@" + inviter_id + "> of " + display_name + ".";
+            const std::string rank = Text::get_rank(std::stoi(inviter_nationality[0]["rank"]));
+            was_invited_text = " They were invited by the " + rank + " <@" + inviter_discord_id + "> of " + nation_name + ".";
         }
     }
 
+    ///////// c. /////////
     const dpp::embed embed = dpp::embed()
     .set_color(dpp::colors::light_green)
     .set_title("New Citizen")
-    .set_description("<@" + std::to_string(user_id) + "> just received their citizenship from the " + government_type + " of " + display_name + "." + was_invited);
+    .set_description("<@" + std::to_string(executer_discord_id) + "> just received their citizenship from the " + government_type + " of " + nation_name + "." + was_invited_text);
 
     bot.message_create
     (

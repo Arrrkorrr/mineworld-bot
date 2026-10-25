@@ -3,8 +3,8 @@
 
 enum Publishers
 {
-    WHITELIST = 0,
-    BLACKLIST = 1
+    WHITELISTED = 0,
+    BLACKLISTED = 1
 };
 
 enum PostVisibility

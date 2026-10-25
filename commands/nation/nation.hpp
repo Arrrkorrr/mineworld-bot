@@ -1,6 +1,8 @@
 #ifndef COMMANDS_NATION_HPP
 #define COMMANDS_NATION_HPP
 
+#include <dpp/cluster.h>
+#include <dpp/dispatcher.h>
 #include <dpp/dpp.h>
 #include <mysql/mysql.h>
 
@@ -11,17 +13,6 @@ namespace Nation
     ////////////////////////////
 
     void nation_create
-    (
-        dpp::cluster                    &bot,
-        MYSQL*                          &database,
-        const dpp::interaction_create_t &event
-    );
-
-    /////////////////////////////
-    ///// nation.config.cpp /////
-    /////////////////////////////
-
-    void nation_config
     (
         dpp::cluster                    &bot,
         MYSQL*                          &database,

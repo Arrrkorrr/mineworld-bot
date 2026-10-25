@@ -3,7 +3,14 @@
 #include "../utils/logs/logs.hpp"
 #include "../utils/miscellaneous/miscellaneous.hpp"
 
+#include <dpp/cluster.h>
+#include <dpp/dispatcher.h>
 #include <dpp/dpp.h>
+#include <dpp/guild.h>
+#include <dpp/message.h>
+#include <dpp/permissions.h>
+#include <dpp/restresults.h>
+#include <dpp/snowflake.h>
 #include <string>
 
 /*
@@ -11,19 +18,19 @@
 
     Tasks:
         1) Get command parameters.
-        2) We do some verification.
-            a. Verify that the user and executer IDs do not match.
+        2) Some verification.
+            a. Verify that the executer are not trying to ban themselves.
             b. Verify that the executer is not trying to ban the bot.
-            c. Try to get some information about the user within the guild.
-            d. Try to get some information about the guild.
-            e. Verify that the user is not trying to ban the guild owner.
-            f. Verify that the executer has the required permissions to perform a ban themselves.
-            g. Verify that the executer is the server owner in order to be able to ban an administrator.
-            h. Verify that the executer highest role is higher than the user highest role in the hierarchy.
-            i. Try to get the bot permissions within the guild.
-            j. Try to get some information about the bot within the guild.
-            k. Verify that the bot has the required permissions to perform a ban.
-        3) We process the ban request.
+            c. Get some information about the target within the guild.
+            d. Get some information about the guild.
+            e. Verify that the executer is not trying to ban the guild owner.
+            f. Verify that the executer has required permissions to ban.
+            g. Verify that the executer is the server owner in order to ban administrators.
+            h. Verify that the executer is higher than the target in the role hierarchy.
+            i. Get bot permissions within the guild.
+            j. Get some information about the bot within the guild.
+            k. Verify that the bot has required permissions to ban.
+        3) Ban the target.
             a. Register the ban reason in audit logs.
             b. Perform the ban.
             c. Verify that the ban did not fail.
@@ -42,31 +49,33 @@ void Commands::ban
 )
 {
     ////////////////// 1) //////////////////
-    const dpp::snowflake user_id = std::get<dpp::snowflake>(event.get_parameter("member"));
-    const std::string reason = std::get<std::string>(event.get_parameter("reason"));
-    const bool silent = std::get<bool>(event.get_parameter("silent"));
+    const dpp::snowflake target_discord_id = std::get<dpp::snowflake>(event.get_parameter("member"));
+    const std::string ban_reason = std::get<std::string>(event.get_parameter("reason"));
+    const bool is_silent_ban = std::get<bool>(event.get_parameter("silent"));
 
     ////////////////// 2) //////////////////
     ///////// a. //////////
-    const dpp::snowflake executer_id = event.command.usr.id;
+    const dpp::snowflake executer_discord_id = event.command.usr.id;
 
-    if (user_id == executer_id)
+    if (target_discord_id == executer_discord_id)
     {
         event.reply(dpp::message(":prohibited: You are not allowed to ban yourself.").set_flags(dpp::m_ephemeral));
         return;
     }
 
     ///////// b. //////////
-    if (user_id == bot.me.id)
+    const dpp::snowflake bot_discord_id = bot.me.id;
+
+    if (target_discord_id == bot_discord_id)
     {
         event.reply(dpp::message("<:putin_gun:1516736231357153491> I WILL NOT GO DOWN WITHOUT A FIGHT!").set_flags(dpp::m_ephemeral));
         return;
     }
 
     ///////// c. //////////
-    const auto member_it = event.command.resolved.members.find(user_id);
+    const auto target_member_iterator = event.command.resolved.members.find(target_discord_id);
 
-    if (member_it == event.command.resolved.members.end())
+    if (target_member_iterator == event.command.resolved.members.end())
     {
         event.reply(dpp::message(":prohibited: This member was not found in this guild.").set_flags(dpp::m_ephemeral));
         return;
@@ -83,15 +92,17 @@ void Commands::ban
     }
 
     ///////// e. //////////
-    if (user_id == guild -> owner_id)
+    const dpp::snowflake owner_discord_id = guild -> owner_id;
+
+    if (target_discord_id == owner_discord_id)
     {
         event.reply(dpp::message(":prohibited: You can not ban the guild owner.").set_flags(dpp::m_ephemeral));
         return;
     }
 
     ///////// f. //////////
-    const dpp::guild_member executer = event.command.member;
-    const dpp::permission executer_permissions = guild -> base_permissions(executer);
+    const dpp::guild_member executer_guild_member = event.command.member;
+    const dpp::permission executer_permissions = guild -> base_permissions(executer_guild_member);
 
     if (!(executer_permissions & dpp::p_ban_members))
     {
@@ -100,22 +111,22 @@ void Commands::ban
     }
 
     ///////// g. //////////
-    const dpp::guild_member member = member_it -> second;
-    const dpp::permission member_permissions = guild -> base_permissions(member);
+    const dpp::guild_member target_guild_member = target_member_iterator -> second;
+    const dpp::permission target_permissions = guild -> base_permissions(target_guild_member);
 
-    if ((member_permissions & dpp::p_administrator) && executer_id != guild -> owner_id)
+    if ((target_permissions & dpp::p_administrator) && executer_discord_id != owner_discord_id)
     {
         event.reply(dpp::message(":prohibited: Only the guild owner is allowed to ban administrators.").set_flags(dpp::m_ephemeral));
         return;
     }
 
     ///////// h. //////////
-    const uint8_t highest_member_role = Miscellaneous::highest_role_position(member);
-    const uint8_t highest_executer_role = Miscellaneous::highest_role_position(executer);
+    const uint8_t highest_target_role = Miscellaneous::highest_role_position(target_guild_member);
+    const uint8_t highest_executer_role = Miscellaneous::highest_role_position(executer_guild_member);
 
-    if (highest_member_role >= highest_executer_role && executer_id != guild -> owner_id)
+    if (highest_target_role >= highest_executer_role && executer_discord_id != owner_discord_id)
     {
-        event.reply(dpp::message(":prohibited: You can not ban this member.").set_flags(dpp::m_ephemeral));
+        event.reply(dpp::message(":prohibited: You can not ban this member due to role hierarchy.").set_flags(dpp::m_ephemeral));
         return;
     }
 
@@ -129,30 +140,30 @@ void Commands::ban
     }
 
     ///////// j. //////////
-    const auto bot_member_it = guild -> members.find(bot.me.id);
+    const auto bot_member_iterator = guild -> members.find(bot_discord_id);
 
-    if (bot_member_it == guild -> members.end())
+    if (bot_member_iterator == guild -> members.end())
     {
         event.reply(dpp::message(":prohibited: Failed to find the bot in guild data.").set_flags(dpp::m_ephemeral));
         return;
     }
 
     ///////// k. //////////
-    const dpp::guild_member bot_member = bot_member_it -> second;
-    const uint8_t highest_bot_role = Miscellaneous::highest_role_position(bot_member);
+    const dpp::guild_member bot_guild_member = bot_member_iterator -> second;
+    const uint8_t highest_bot_role = Miscellaneous::highest_role_position(bot_guild_member);
 
-    if (highest_member_role >= highest_bot_role)
+    if (highest_target_role >= highest_bot_role)
     {
-        event.reply(dpp::message(":prohibited: I can not ban this member.").set_flags(dpp::m_ephemeral));
+        event.reply(dpp::message(":prohibited: I can not ban this member due to role hierarchy.").set_flags(dpp::m_ephemeral));
         return;
     }
 
     ////////////////// 3) //////////////////
     ///////// a. //////////
-    bot.set_audit_reason("[" + std::to_string(executer_id) + "] " + reason);
+    bot.set_audit_reason("[" + std::to_string(executer_discord_id) + "] " + ban_reason);
 
     ///////// b. //////////
-    bot.guild_ban_add(guild_id, user_id, 0, [=](const dpp::confirmation_callback_t &callback)
+    bot.guild_ban_add(guild_id, target_discord_id, 0, [=](const dpp::confirmation_callback_t &callback)
     {
         ///////// c. //////////
         if (callback.is_error())
@@ -161,7 +172,7 @@ void Commands::ban
             return;
         }
 
-        event.reply(dpp::message(":man_judge: <@" + std::to_string(user_id) + "> has been banned!").set_flags(silent ? dpp::m_ephemeral : 0));
-        Logs::log("[ban] " + std::to_string(executer_id) + " banned " + std::to_string(user_id) + " from " + std::to_string(guild_id) +  " for \"" + reason + "\".");
+        event.reply(dpp::message(":man_judge: <@" + std::to_string(target_discord_id) + "> has been banned!").set_flags(is_silent_ban ? dpp::m_ephemeral : 0));
+        Logs::log("[ban] " + std::to_string(executer_discord_id) + " banned " + std::to_string(target_discord_id) + " from " + std::to_string(guild_id) +  " for \"" + ban_reason + "\".");
     });
 }

@@ -3,6 +3,8 @@
 
 #include "nation/nation.hpp"
 
+#include <dpp/cluster.h>
+#include <dpp/dispatcher.h>
 #include <dpp/dpp.h>
 
 namespace Commands

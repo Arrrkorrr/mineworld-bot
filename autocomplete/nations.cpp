@@ -77,10 +77,10 @@ void Autocomplete::nations
 
     for (std::map<std::string, std::string> &nation : nations)
     {
+        const std::string nation_name = nation["display_name"];
         const std::string nation_id = nation["nation_id"];
-        const std::string display_name = nation["display_name"];
 
-        auto_complete_data.add_autocomplete_choice(dpp::command_option_choice(display_name + " (" + nation_id + ")", nation_id));
+        auto_complete_data.add_autocomplete_choice(dpp::command_option_choice(nation_name + " (" + nation_id + ")", nation_id));
     }
 
     ///////// b. /////////

@@ -1,13 +1,12 @@
 #include "commands.hpp"
 
+#include <dpp/dispatcher.h>
 #include <dpp/dpp.h>
+#include <dpp/message.h>
 #include <string>
 
 /*
-    Display rules to the user.
-
-    Tasks:
-        1) Reply to the interaction.
+    Display server rules to the user.
 
     Parameters (variable_name / type / description):
         - event     / dpp::interaction_create_t / All information about the event.

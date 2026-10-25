@@ -54,7 +54,7 @@ void Journalism::journalism_blacklist
 
     if (user_registered.size() == 0)
         Database::db_query(database, "INSERT INTO journalism VALUES ('" + publisher_id + "', 1)");
-    else Database::db_query(database, "UPDATE journalism SET status = '1' WHERE user_id = '" + publisher_id + "'");
+    else Database::db_query(database, "UPDATE journalism SET status = '" + std::to_string(BLACKLISTED) + "' WHERE user_id = '" + publisher_id + "'");
 
     ///////// c. /////////
     const int new_freedom_rating = std::clamp(freedom_rating - BLACKLISTED_USER_SCORE_HIT, 0, 100);

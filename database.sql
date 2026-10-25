@@ -11,6 +11,7 @@ CREATE TABLE config
     welcome_channel BIGINT DEFAULT NULL,
     world_channel BIGINT DEFAULT NULL,
     journalism_channel BIGINT DEFAULT NULL,
+    moderators_channel BIGINT DEFAULT NULL,
     mineworld_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
@@ -34,8 +35,8 @@ CREATE TABLE players
     user_id BIGINT PRIMARY KEY AUTO_INCREMENT,
     username VARCHAR(50) NOT NULL UNIQUE,
     password VARCHAR(128) NOT NULL,
-    discord_id BIGINT NOT NULL UNIQUE,
-    minecraft_uuid VARCHAR(36) NOT NULL UNIQUE
+    discord_id BIGINT DEFAULT NULL UNIQUE,
+    minecraft_uuid VARCHAR(36) DEFAULT NULL UNIQUE
 );
 
 

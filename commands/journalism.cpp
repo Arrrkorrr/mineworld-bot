@@ -1,15 +1,17 @@
 #include "commands.hpp"
 
+#include <dpp/dispatcher.h>
 #include <dpp/dpp.h>
+#include <dpp/message.h>
 
 /*
     Display a modal to make a post in journalism channel.
 
     Tasks:
         1) Create the modal.
-            a. Declare the modal and its ID.
-            b. Create all components for the modal.
-        2) Display the modal to the users.
+            a. Declare modal.
+            b. Create all components of the modal.
+        2) Display the modal.
 
     Parameters (variable_name / type / description):
         - event     / dpp::interaction_create_t / All information about the event.
