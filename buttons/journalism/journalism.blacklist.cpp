@@ -36,9 +36,9 @@ void Journalism::journalism_blacklist
 {
     ////////////////// 1) //////////////////
     const BlacklistInfo information = Journalism::journalism_censor(bot, database, event);
-    const std::string publisher_id = information.publisher_id;
+    const std::string publisher_user_id = information.publisher_user_id;
 
-    if (publisher_id == "")
+    if (publisher_user_id == "")
         return;
 
     ////////////////// 2) //////////////////
@@ -50,11 +50,11 @@ void Journalism::journalism_blacklist
         return;
 
     ///////// b. /////////
-    Database::Output user_registered = Database::db_query(database, "SELECT 1 FROM journalism WHERE user_id = '" + publisher_id + "' LIMIT 1");
+    Database::Output publisher_registered = Database::db_query(database, "SELECT 1 FROM journalism WHERE user_id = '" + publisher_user_id + "' LIMIT 1");
 
-    if (user_registered.size() == 0)
-        Database::db_query(database, "INSERT INTO journalism VALUES ('" + publisher_id + "', 1)");
-    else Database::db_query(database, "UPDATE journalism SET status = '" + std::to_string(BLACKLISTED) + "' WHERE user_id = '" + publisher_id + "'");
+    if (publisher_registered.size() == 0)
+        Database::db_query(database, "INSERT INTO journalism VALUES ('" + publisher_user_id + "', 1)");
+    else Database::db_query(database, "UPDATE journalism SET status = '" + std::to_string(BLACKLISTED) + "' WHERE user_id = '" + publisher_user_id + "'");
 
     ///////// c. /////////
     const int new_freedom_rating = std::clamp(freedom_rating - BLACKLISTED_USER_SCORE_HIT, 0, 100);

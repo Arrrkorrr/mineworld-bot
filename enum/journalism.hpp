@@ -12,7 +12,7 @@ enum PostVisibility
     VISIBLE_POST = 0,
     REMOVED_POST = 1,
     CENSORED_POST = 2,
-    MODERATION_TAKE_DOWN = 3
+    POST_REMOVED_MODERATION = 3
 };
 
 enum FreedomRatingScores

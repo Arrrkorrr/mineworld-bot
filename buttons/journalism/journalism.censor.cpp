@@ -1,6 +1,7 @@
 #include "journalism.hpp"
 
 #include "../../enum/journalism.hpp"
+#include "../../enum/nations.hpp"
 #include "../../enum/ranks.hpp"
 
 #include "../../utils/database/database.hpp"
@@ -21,15 +22,16 @@
 
     Tasks:
         1) Some verification.
-            a. Verify that the executer is not stateless.
-            b. Get some information about the executer nation.
-            c. Verify that the executer is part of the government of their nation.
-            d. Get some information about the post.
-            e. Verify that the executer and post nation IDs match.
-            f. Verify that the executer are not trying to censor themselves.
-            g. Verify that the publisher is still in the executer nation to compare ranks.
-            h. If they share the same nation, verify that the publisher does not have a higher rank than the executer's.
-            i. If they share the same nation, verify that the publisher and the executer does not share the same rank.
+            a. Verify that the executer has a MineWorld account linked to their Discord account.
+            b. Verify that the executer is not stateless.
+            c. Get some information about the executer nation.
+            d. Verify that the executer is part of the government of their nation.
+            e. Get some information about the post.
+            f. Verify that the executer and post nation IDs match.
+            g. Verify that the executer are not trying to censor themselves.
+            h. Verify that the publisher is still in the executer nation to compare ranks.
+            i. If they share the same nation, verify that the publisher does not have a higher rank than the executer's.
+            j. If they share the same nation, verify that the publisher and the executer does not share the same rank.
         2) Censor the post.
             a. Delete the post and buttons.
             b. Edit message content to a censorship notice.
@@ -56,7 +58,17 @@ BlacklistInfo Journalism::journalism_censor
     ////////////////// 1) //////////////////
     ///////// a. /////////
     const std::string executer_discord_id = std::to_string(event.command.usr.id);
-    Database::Output executer_nationality = Database::db_query(database, "SELECT nationalities.nation_id, nationalities.rank, players.user_id FROM nationalities JOIN players ON players.user_id = nationalities.user_id WHERE players.discord_id = '" + executer_discord_id + "' LIMIT 1");
+    Database::Output executer_credentials = Database::db_query(database, "SELECT user_id FROM players WHERE discord_id = '" + executer_discord_id + "' LIMIT 1");
+
+    if (executer_credentials.size() == 0)
+    {
+        event.reply(dpp::message(":prohibited: No MineWorld account is linked to your Discord account. Create a MineWorld account using `/account register` or link your already existing account with `/account discord`.").set_flags(dpp::m_ephemeral));
+        return { "", -1, "" };
+    }
+
+    ///////// b. /////////
+    const std::string executer_user_id = executer_credentials[0]["user_id"];
+    Database::Output executer_nationality = Database::db_query(database, "SELECT nation_id, rank FROM nationalities WHERE user_id = '" + executer_user_id + "' LIMIT 1");
 
     if (executer_nationality.size() == 0)
     {
@@ -64,28 +76,28 @@ BlacklistInfo Journalism::journalism_censor
         return { "", -1, "" };
     }
 
-    ///////// b. /////////
-    const std::string nation_id = executer_nationality[0]["nationalities.nation_id"];
-    Database::Output nation = Database::db_query(database, "SELECT nations.display_name, governments.government_type FROM nations JOIN governments ON governments.nation_id = nations.nation_id WHERE nations.nation_id = '" + nation_id + "' LIMIT 1");
+    ///////// c. /////////
+    const std::string nation_id = executer_nationality[0]["nation_id"];
+    Database::Output executer_nation = Database::db_query(database, "SELECT nations.display_name, governments.government_type FROM nations JOIN governments ON governments.nation_id = nations.nation_id WHERE nations.nation_id = '" + nation_id + "' AND deleted = '" + std::to_string(EXISTING_NATION) + "' LIMIT 1");
 
-    if (nation.size() == 0)
+    if (executer_nation.size() == 0)
     {
         event.reply(dpp::message(":prohibited: Nation `" + nation_id + "` does not exist.").set_flags(dpp::m_ephemeral));
         return { "", -1, "" };
     }
 
-    ///////// c. /////////
-    const std::string nation_name = nation[0]["nations.display_name"];
-    const int executer_rank = std::stoi(executer_nationality[0]["nationalities.rank"]);
-    const std::string government_type = Text::get_government_type(std::stoi(nation[0]["governments.government_type"]));
+    ///////// d. /////////
+    const std::string executer_nation_name = executer_nation[0]["nations.display_name"];
+    const std::string executer_nation_government_type = Text::get_government_type(std::stoi(executer_nation[0]["governments.government_type"]));
+    const int executer_rank = std::stoi(executer_nationality[0]["rank"]);
 
     if (executer_rank < MINISTER)
     {
-        event.reply(dpp::message(":prohibited: You must be a government official of the " + government_type + " of " + nation_name + " in order to censor posts.").set_flags(dpp::m_ephemeral));
+        event.reply(dpp::message(":prohibited: You must be a government official of the " + executer_nation_government_type + " of " + executer_nation_name + " in order to censor posts.").set_flags(dpp::m_ephemeral));
         return { "", -1, "" };
     }
 
-    ///////// d. /////////
+    ///////// e. /////////
     const int message_length = event.command.msg.content.size();
     const std::string post_id = event.command.msg.content.substr(2, message_length - 4);
 
@@ -97,9 +109,9 @@ BlacklistInfo Journalism::journalism_censor
         return { "", -1, "" };
     }
 
-    ///////// e. /////////
+    ///////// f. /////////
     const std::string post_nation_id = post[0]["nation_id"];
-    const std::string rank_name = Text::get_rank(executer_rank);
+    const std::string executer_rank_name = Text::get_rank(executer_rank);
 
     if (nation_id != post_nation_id)
     {
@@ -108,29 +120,28 @@ BlacklistInfo Journalism::journalism_censor
         if (publication_nation.size() == 0)
         {
             Logs::log("Warning: Nation ID " + post_nation_id + " missing in database -> journalism_censor button.");
-            event.reply(dpp::message(":prohibited: You can not censor a post published from another nation being " + rank_name + " of the " + government_type + " of " + nation_name + ".").set_flags(dpp::m_ephemeral));
+            event.reply(dpp::message(":prohibited: You can not censor a post published from another nation being " + executer_rank_name + " of the " + executer_nation_government_type + " of " + executer_nation_name + ".").set_flags(dpp::m_ephemeral));
             return { "", -1, "" };
         }
 
         const std::string publication_nation_name = publication_nation[0]["nations.display_name"];
         const std::string publication_nation_government_type = Text::get_government_type(std::stoi(publication_nation[0]["governments.government_type"]));
 
-        event.reply(dpp::message(":prohibited: You can not censor a post published from the " + publication_nation_government_type + " of " + publication_nation_name + " being " + rank_name + " of the " + government_type + " of " + nation_name + ".").set_flags(dpp::m_ephemeral));
+        event.reply(dpp::message(":prohibited: You can not censor a post published from the " + publication_nation_government_type + " of " + publication_nation_name + " being " + executer_rank_name + " of the " + executer_nation_government_type + " of " + executer_nation_name + ".").set_flags(dpp::m_ephemeral));
         return { "", -1, "" };
     }
 
-    ///////// f. /////////
-    const std::string executer_id = executer_nationality[0]["players.user_id"];
-    const std::string publisher_id = post[0]["user_id"];
+    ///////// g. /////////
+    const std::string publisher_user_id = post[0]["user_id"];
 
-    if (publisher_id == executer_id)
+    if (publisher_user_id == executer_user_id)
     {
         event.reply(dpp::message(":prohibited: You can not censor yourself. In order to remove your own posts, press the `🗑️ Delete` button.").set_flags(dpp::m_ephemeral));
         return { "", -1, "" };
     }
 
-    ///////// g. /////////
-    Database::Output publisher_nationality = Database::db_query(database, "SELECT nationalities.nation_id, nationalities.rank, players.discord_id FROM nationalities JOIN players ON players.user_id = nationalities.user_id WHERE nationalities.user_id = '" + publisher_id + "' LIMIT 1");
+    ///////// h. /////////
+    Database::Output publisher_nationality = Database::db_query(database, "SELECT nationalities.nation_id, nationalities.rank, players.discord_id FROM nationalities JOIN players ON players.user_id = nationalities.user_id WHERE nationalities.user_id = '" + publisher_user_id + "' LIMIT 1");
 
     const int publisher_rank = std::stoi(publisher_nationality[0]["nationalities.rank"]);
     const std::string publisher_rank_name = Text::get_rank(publisher_rank);
@@ -143,17 +154,17 @@ BlacklistInfo Journalism::journalism_censor
         {
             const std::string publisher_discord_id = publisher_nationality[0]["players.discord_id"];
 
-            ///////// h. /////////
+            ///////// i. /////////
             if (publisher_rank > executer_rank)
             {
-                event.reply(dpp::message(":prohibited: You can not censor a post published by " + publisher_rank_name + " <@" + publisher_discord_id + "> of the " + government_type + " of " + nation_name + " as they have a higher rank than you (" + publisher_rank_name + " > " + rank_name + ").").set_flags(dpp::m_ephemeral));
+                event.reply(dpp::message(":prohibited: You can not censor a post published by " + publisher_rank_name + " <@" + publisher_discord_id + "> of the " + executer_nation_government_type + " of " + executer_nation_name + " as they have a higher rank than you (" + publisher_rank_name + " > " + executer_rank_name + ").").set_flags(dpp::m_ephemeral));
                 return { "", -1, "" };
             }
 
-            ///////// i. /////////
+            ///////// j. /////////
             if (publisher_rank == executer_rank)
             {
-                event.reply(dpp::message(":prohibited: You can not censor a post published by " + publisher_rank_name + " <@" + publisher_discord_id + "> of the " + government_type + " of " + nation_name + " as you share the same rank.").set_flags(dpp::m_ephemeral));
+                event.reply(dpp::message(":prohibited: You can not censor a post published by " + publisher_rank_name + " <@" + publisher_discord_id + "> of the " + executer_nation_government_type + " of " + executer_nation_name + " as you share the same rank.").set_flags(dpp::m_ephemeral));
                 return { "", -1, "" };
             }
         }
@@ -167,7 +178,7 @@ BlacklistInfo Journalism::journalism_censor
     message.components.clear();
 
     ///////// b. /////////
-    message.set_content(":warning: Post taken down by the government of the " + government_type + " of " + nation_name + ".");
+    message.set_content(":warning: Post taken down by the government of the " + executer_nation_government_type + " of " + executer_nation_name + ".");
     bot.message_edit(message);
 
     ///////// c. /////////
@@ -181,16 +192,16 @@ BlacklistInfo Journalism::journalism_censor
     {
         Logs::log("Warning: Failed to find any media information about " + nation_id + " -> journalism_censor button.");
         event.reply();
-        return { publisher_id, -1, "" };
+        return { publisher_user_id, -1, "" };
     }
 
     ///////// b. /////////
-    const int freedom_rating = std::stoi(nation[0]["freedom_rating"]);
+    const int freedom_rating = std::stoi(executer_nation[0]["freedom_rating"]);
     const int new_freedom_rating = std::clamp(freedom_rating - CENSORED_POST_SCORE_HIT, 0, 100);
     const std::string now = std::to_string(Miscellaneous::get_current_timestamp());
 
     Database::db_query(database, "UPDATE media SET media_freedom = '" + std::to_string(new_freedom_rating) + "', last_manual_censorship = '" + now + "' WHERE nation_id = '" + nation_id + "'");
     event.reply();
 
-    return { publisher_id, new_freedom_rating, nation_id };
+    return { publisher_user_id, new_freedom_rating, nation_id };
 }

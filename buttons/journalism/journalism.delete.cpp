@@ -15,8 +15,9 @@
 
     Tasks:
         1) Some verification.
-            a. Retrieve the post ID from the message and try to retrieve its publisher ID.
-            b. Verify that the publisher ID and command executer ID are similar.
+            a. Verify that the executer has a MineWorld account linked to their Discord account.
+            b. Retrieve the post ID from the message and try to retrieve its publisher ID.
+            c. Verify that the publisher ID and command executer ID are similar.
         2) Remove the post.
             a. Delete the post and buttons.
             b. Edit message content to a censorship notice.
@@ -39,6 +40,16 @@ void Journalism::journalism_delete
 {
     ////////////////// 1) //////////////////
     ///////// a. /////////
+    const std::string executer_discord_id = std::to_string(event.command.usr.id);
+    Database::Output executer_credentials = Database::db_query(database, "SELECT user_id FROM players WHERE discord_id = '" + executer_discord_id + "' LIMIT 1");
+
+    if (executer_credentials.size() == 0)
+    {
+        event.reply(dpp::message(":prohibited: No MineWorld account is linked to your Discord account. Create a MineWorld account using `/account register` or link your already existing account with `/account discord`.").set_flags(dpp::m_ephemeral));
+        return;
+    }
+
+    ///////// b. /////////
     const int message_length = event.command.msg.content.size();
     const std::string post_id = event.command.msg.content.substr(2, message_length - 4);
 
@@ -50,11 +61,11 @@ void Journalism::journalism_delete
         return;
     }
 
-    ///////// b. /////////
-    const std::string user_id = post[0]["user_id"];
-    const std::string executer_id = std::to_string(event.command.usr.id);
+    ///////// c. /////////
+    const std::string executer_user_id = post[0]["user_id"];
+    const std::string publisher_user_id = post[0]["user_id"];
 
-    if (user_id != executer_id)
+    if (publisher_user_id != executer_user_id)
     {
         event.reply(dpp::message(":prohibited: You can not delete the posts published by other people.").set_flags(dpp::m_ephemeral));
         return;

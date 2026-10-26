@@ -13,7 +13,7 @@
 
 struct BlacklistInfo
 {
-    const std::string publisher_id;
+    const std::string publisher_user_id;
     const int freedom_rating;
     const std::string nation_id;
 };

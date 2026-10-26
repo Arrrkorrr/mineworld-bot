@@ -5,7 +5,7 @@ enum NationStatus
 {
     EXISTING_NATION = 0,
     COLLAPSED_NATION = 1,
-    MODERATION_TAKE_DOWN = 2
+    NATION_REMOVED_MODERATION = 2
 };
 
 #endif
