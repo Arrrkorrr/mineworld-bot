@@ -77,12 +77,12 @@ BlacklistInfo Journalism::journalism_censor
     }
 
     ///////// c. /////////
-    const std::string nation_id = executer_nationality[0]["nation_id"];
-    Database::Output executer_nation = Database::db_query(database, "SELECT nations.display_name, governments.government_type FROM nations JOIN governments ON governments.nation_id = nations.nation_id WHERE nations.nation_id = '" + nation_id + "' AND deleted = '" + std::to_string(EXISTING_NATION) + "' LIMIT 1");
+    const std::string executer_nation_id = executer_nationality[0]["nation_id"];
+    Database::Output executer_nation = Database::db_query(database, "SELECT nations.display_name, governments.government_type FROM nations JOIN governments ON governments.nation_id = nations.nation_id WHERE nations.nation_id = '" + executer_nation_id + "' AND deleted = '" + std::to_string(EXISTING_NATION) + "' LIMIT 1");
 
     if (executer_nation.size() == 0)
     {
-        event.reply(dpp::message(":prohibited: Nation `" + nation_id + "` does not exist.").set_flags(dpp::m_ephemeral));
+        event.reply(dpp::message(":prohibited: Your nation `" + executer_nation_id + "` no longer exists.").set_flags(dpp::m_ephemeral));
         return { "", -1, "" };
     }
 
@@ -113,7 +113,7 @@ BlacklistInfo Journalism::journalism_censor
     const std::string post_nation_id = post[0]["nation_id"];
     const std::string executer_rank_name = Text::get_rank(executer_rank);
 
-    if (nation_id != post_nation_id)
+    if (executer_nation_id != post_nation_id)
     {
         Database::Output publication_nation = Database::db_query(database, "SELECT nations.display_name, governments.government_type FROM nations JOIN governments ON governments.nation_id = nations.nation_id WHERE nation_id = '" + post_nation_id + "' LIMIT 1");
 
@@ -150,7 +150,7 @@ BlacklistInfo Journalism::journalism_censor
     {
         const std::string publisher_nation_id = publisher_nationality[0]["nationalities.nation_id"];
 
-        if (publisher_nation_id == nation_id)
+        if (publisher_nation_id == executer_nation_id)
         {
             const std::string publisher_discord_id = publisher_nationality[0]["players.discord_id"];
 
@@ -186,11 +186,11 @@ BlacklistInfo Journalism::journalism_censor
 
     ////////////////// 3) //////////////////
     ///////// a. /////////
-    Database::Output media = Database::db_query(database, "SELECT freedom_rating FROM media WHERE nation_id = '" + nation_id + "' LIMIT 1");
+    Database::Output media = Database::db_query(database, "SELECT freedom_rating FROM media WHERE nation_id = '" + executer_nation_id + "' LIMIT 1");
 
     if (media.size() == 0)
     {
-        Logs::log("Warning: Failed to find any media information about " + nation_id + " -> journalism_censor button.");
+        Logs::log("Warning: Failed to find any media information about " + executer_nation_id + " -> journalism_censor button.");
         event.reply();
         return { publisher_user_id, -1, "" };
     }
@@ -200,8 +200,8 @@ BlacklistInfo Journalism::journalism_censor
     const int new_freedom_rating = std::clamp(freedom_rating - CENSORED_POST_SCORE_HIT, 0, 100);
     const std::string now = std::to_string(Miscellaneous::get_current_timestamp());
 
-    Database::db_query(database, "UPDATE media SET media_freedom = '" + std::to_string(new_freedom_rating) + "', last_manual_censorship = '" + now + "' WHERE nation_id = '" + nation_id + "'");
+    Database::db_query(database, "UPDATE media SET media_freedom = '" + std::to_string(new_freedom_rating) + "', last_manual_censorship = '" + now + "' WHERE nation_id = '" + executer_nation_id + "'");
     event.reply();
 
-    return { publisher_user_id, new_freedom_rating, nation_id };
+    return { publisher_user_id, new_freedom_rating, executer_nation_id };
 }

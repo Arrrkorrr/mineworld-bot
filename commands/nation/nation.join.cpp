@@ -1,6 +1,7 @@
 #include "nation.hpp"
 
 #include "../../enum/immigration.hpp"
+#include "../../enum/nations.hpp"
 #include "../../enum/ranks.hpp"
 #include "../../utils/database/database.hpp"
 #include "../../utils/logs/logs.hpp"
@@ -75,14 +76,14 @@ void Nation::join_nation
                     "FROM nations " +
                     "JOIN governments ON governments.nation_id = nations.nation_id " +
                     "JOIN immigration ON immigration.nation_id = nations.nation_id " +
-                    "WHERE nations.nation_id = '" + nation_id + "' LIMIT 1"
+                    "WHERE nations.nation_id = '" + nation_id + "' AND nations.deleted = '" + std::to_string(EXISTING_NATION) + "' LIMIT 1"
     );
 
     Database::Output nation = Database::db_query(database, query);
 
     if (nation.size() == 0)
     {
-        event.reply(dpp::message(":prohibited: Nation `" + nation_id + "` does not exist.").set_flags(dpp::m_ephemeral));
+        event.reply(dpp::message(":prohibited: Nation `" + nation_id + "` does not or no longer exist.").set_flags(dpp::m_ephemeral));
         return;
     }
 

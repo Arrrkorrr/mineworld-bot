@@ -62,7 +62,7 @@ void Journalism::journalism_delete
     }
 
     ///////// c. /////////
-    const std::string executer_user_id = post[0]["user_id"];
+    const std::string executer_user_id = executer_credentials[0]["user_id"];
     const std::string publisher_user_id = post[0]["user_id"];
 
     if (publisher_user_id != executer_user_id)

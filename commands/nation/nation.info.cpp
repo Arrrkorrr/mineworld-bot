@@ -1,5 +1,6 @@
 #include "nation.hpp"
 
+#include "../../enum/nations.hpp"
 #include "../../utils/database/database.hpp"
 #include "../../utils/text/text.hpp"
 
@@ -46,7 +47,7 @@ void Nation::nation_info
     ///////// b. /////////
     const std::string query =
     (
-        std::string("SELECT nations.display_name, nations.description, nations.creation_time, nations.role_id, governments.government_type, governments.ideology, immigration.join_condition ") +
+        std::string("SELECT nations.display_name, nations.description, nations.deleted, nations.creation_time, nations.role_id, governments.government_type, governments.ideology, immigration.join_condition ") +
                     "FROM nations " +
                     "JOIN governments ON governments.nation_id = nations.nation_id " +
                     "JOIN immigration ON immigration.nation_id = nations.nation_id " +
@@ -66,14 +67,15 @@ void Nation::nation_info
 
     ////////////////// 2) //////////////////
     ///////// a. /////////
-    const std::string government_type = Text::get_government_type(std::stoi(nation[0]["government_type"]));
-    const std::string ideology = Text::get_ideology(std::stoi(nation[0]["ideology"]));
-    const std::string join_condition = Text::get_join_condition(std::stoi(nation[0]["join_condition"]));
-    const std::string nation_name = nation[0]["display_name"];
-    const std::string nation_creation_time = (nation[0]["creation_time"] == "0" ? "Never" : "<t:" + nation[0]["creation_time"] + ":f>");
-    const std::string nation_description = nation[0]["description"];
+    const std::string nation_creation_time = (nation[0]["nations.creation_time"] == "0" ? "Never" : "<t:" + nation[0]["nations.creation_time"] + ":f>");
+    const std::string nation_description = nation[0]["nations.description"];
+    const std::string nation_government_type = Text::get_government_type(std::stoi(nation[0]["governments.government_type"]));
+    const std::string nation_ideology = Text::get_ideology(std::stoi(nation[0]["governments.ideology"]));
+    const std::string nation_join_condition = Text::get_join_condition(std::stoi(nation[0]["immigration.join_condition"]));
     const std::string nation_members_count = std::to_string(nation_members[0].size());
-    const std::string nation_role = (nation[0]["role_id"] == "0" ? "No role generated yet" : "<@&" + nation[0]["role_id"] + "> ||" + nation[0]["role_id"] + "||");
+    const std::string nation_name = nation[0]["nations.display_name"];
+    const std::string nation_role = (nation[0]["nations.role_id"] == "0" ? "No role generated yet" : "<@&" + nation[0]["nations.role_id"] + "> ||" + nation[0]["role_id"] + "||");
+    const std::string nation_status = (std::stoi(nation[0]["nations.deleted"]) == EXISTING_NATION ? "Active" : "Collapsed");
 
     ///////// b. /////////
     const std::string executer_avatar_url = event.command.usr.get_avatar_url();
@@ -92,13 +94,14 @@ void Nation::nation_info
         ":eye: Overview",
 
         "**Display Name**: " + nation_name + ".\n" +
+        "**Status**: " + nation_status + ".\n" +
         "**Nation ID**: " + nation_id + ".\n" +
-        "**Government**: " + government_type + ".\n" +
-        "**Ideology**: " + ideology + ".\n" +
+        "**Government**: " + nation_government_type + ".\n" +
+        "**Ideology**: " + nation_ideology + ".\n" +
         "**Member count**: " + nation_members_count+ " member(s).\n" +
         "**Role**: " + nation_role + ".\n" +
         "**Became active**: " + nation_creation_time + ".\n" +
-        "**Join condition**: " + join_condition + "."
+        "**Join condition**: " + nation_join_condition + "."
     )
     .set_footer(dpp::embed_footer().set_icon(executer_avatar_url).set_text("Requested by " + executer_username + "."));
 

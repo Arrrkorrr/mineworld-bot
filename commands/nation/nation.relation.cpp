@@ -1,5 +1,6 @@
 #include "nation.hpp"
 
+#include "../../enum/nations.hpp"
 #include "../../enum/ranks.hpp"
 #include "../../utils/database/database.hpp"
 #include "../../utils/logs/logs.hpp"
@@ -75,22 +76,22 @@ void Nation::nation_relation
 
     ///////// c. /////////
     const std::string targeted_nation_id = Database::sanitize_input(database, std::to_string(std::get<int64_t>(event.get_parameter("nation_id"))));
-    Database::Output targeted_nation = Database::db_query(database, "SELECT nations.display_name, governments.government_type FROM nations JOIN governments ON governments.nation_id = nations.nation_id WHERE nation_id = '" + targeted_nation_id + "' LIMIT 1");
+    Database::Output targeted_nation = Database::db_query(database, "SELECT nations.display_name, governments.government_type FROM nations JOIN governments ON governments.nation_id = nations.nation_id WHERE nation_id = '" + targeted_nation_id + "' AND nations.deleted = '" + std::to_string(EXISTING_NATION) + "' LIMIT 1");
 
     if (targeted_nation.size() == 0)
     {
-        event.reply(dpp::message(":prohibited: Nation `" + targeted_nation_id + "` does not exist.").set_flags(dpp::m_ephemeral));
+        event.reply(dpp::message(":prohibited: Nation `" + targeted_nation_id + "` does not or no longer exist.").set_flags(dpp::m_ephemeral));
         return;
     }
 
     ///////// d. /////////
     const std::string executer_nation_id = executer_nationality[0]["nation_id"];
-    Database::Output executer_nation = Database::db_query(database, "SELECT nations.display_name, governments.government_type FROM nations JOIN governments ON governments.nation_id = nations.nation_id WHERE nation_id = '" + executer_nation_id + "' LIMIT 1");
+    Database::Output executer_nation = Database::db_query(database, "SELECT nations.display_name, governments.government_type FROM nations JOIN governments ON governments.nation_id = nations.nation_id WHERE nation_id = '" + executer_nation_id + "' AND nations.deleted = '" + std::to_string(EXISTING_NATION) + "' LIMIT 1");
 
     if (executer_nation.size() == 0)
     {
         Logs::log("Warning: Nation ID " + executer_nation_id + " missing in database -> /nation relation.");
-        return event.reply(dpp::message(":prohibited: Something went wrong while retrieving information about nation `" + executer_nation_id + "`.").set_flags(dpp::m_ephemeral));
+        return event.reply(dpp::message(":prohibited: Your nation `" + executer_nation_id + "` no longer exists.").set_flags(dpp::m_ephemeral));
     }
 
     ///////// e. /////////

@@ -1,6 +1,7 @@
 #include "nation.hpp"
 
 #include "../../enum/immigration.hpp"
+#include "../../enum/nations.hpp"
 #include "../../enum/ranks.hpp"
 #include "../../utils/database/database.hpp"
 #include "../../utils/logs/logs.hpp"
@@ -97,7 +98,7 @@ void Nation::nation_invite
                     "FROM nations " +
                     "JOIN governments ON governments.nation_id = nations.nation_id " +
                     "JOIN immigration ON immigration.nation_id = nations.nation_id " +
-                    "WHERE nations.nation_id = '" + nation_id + "' LIMIT 1"
+                    "WHERE nations.nation_id = '" + nation_id + "' AND nations.deleted = '" + std::to_string(EXISTING_NATION) + "' LIMIT 1"
     );
 
     Database::Output executer_nation = Database::db_query(database, query);
@@ -105,7 +106,7 @@ void Nation::nation_invite
     if (executer_nation.size() == 0)
     {
         Logs::log("Warning: Nation ID " + nation_id + " missing in database -> /nation invite.");
-        return event.reply(dpp::message(":prohibited: Something went wrong while retrieving information about nation `" + nation_id + "`.").set_flags(dpp::m_ephemeral));
+        return event.reply(dpp::message(":prohibited: Your nation `" + nation_id + "` no longer exists.").set_flags(dpp::m_ephemeral));
     }
 
     ///////// f. /////////

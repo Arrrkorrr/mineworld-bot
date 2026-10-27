@@ -1,5 +1,6 @@
 #include "nation.hpp"
 
+#include "../../enum/nations.hpp"
 #include "../../enum/ranks.hpp"
 #include "../../utils/database/database.hpp"
 #include "../../utils/logs/logs.hpp"
@@ -23,7 +24,8 @@
             a. Verify that the executer has a MineWorld account linked to their Discord account.
             b. Verify that the executer is not stateless.
             c. Get some information about the nation.
-            d. Verify that the executer is not the Head of State in a populated nation.
+            d. Remove the citizenship to the executer in case the nation is no longer existing.
+            e. Verify that the executer is not the Head of State in a populated nation.
         2) Process leaving request.
             a. Remove the citizenship to the executer.
             b. Remove the nation role to the executer.
@@ -68,7 +70,7 @@ void Nation::leave_nation
 
     ///////// c. /////////
     const std::string executer_nation_id = executer_nationality[0]["nation_id"];
-    Database::Output executer_nation = Database::db_query(database, "SELECT nations.display_name, nations.role_id, governments.government_type FROM nations JOIN governments ON governments.nation_id = nations.nation_id WHERE nation_id = '" + executer_nation_id + "' LIMIT 1");
+    Database::Output executer_nation = Database::db_query(database, "SELECT nations.display_name, nations.deleted, nations.role_id, governments.government_type FROM nations JOIN governments ON governments.nation_id = nations.nation_id WHERE nation_id = '" + executer_nation_id + "' LIMIT 1");
 
     if (executer_nation.size() == 0)
     {
@@ -77,12 +79,23 @@ void Nation::leave_nation
     }
 
     ///////// d. /////////
-    Database::Output executer_nation_members = Database::db_query(database, "SELECT 1 FROM nationality WHERE nation_id = '" + executer_nation_id + "'");
-
-    const std::string executer_nation_name = executer_nation[0]["nations.display_name"];
     const std::string executer_nation_government_type = Text::get_government_type(std::stoi(executer_nation[0]["governments.government_type"]));
-    const int executer_nation_member_count = executer_nation_members.size();
+    const std::string executer_nation_name = executer_nation[0]["nations.display_name"];
+    const int executer_nation_status = std::stoi(executer_nation[0]["nations.deleted"]);
     const int executer_rank = std::stoi(executer_nation[0]["rank"]);
+    const std::string executer_rank_name = Text::get_rank(executer_rank);
+
+    const bool is_invalid_nation = (executer_nation_status == COLLAPSED_NATION || executer_nation_status == NATION_REMOVED_MODERATION);
+
+    if (is_invalid_nation)
+    {
+        Database::db_query(database, "DELETE FROM nationalities WHERE user_id = '" + executer_user_id + "'");
+        return event.reply(dpp::message(":wave: You left the " + executer_nation_government_type + " of " + executer_nation_name + " and lost your " + executer_rank_name + " rank.").set_flags(dpp::m_ephemeral));
+    }
+
+    ///////// e. /////////
+    Database::Output executer_nation_members = Database::db_query(database, "SELECT 1 FROM nationality WHERE nation_id = '" + executer_nation_id + "'");
+    const int executer_nation_member_count = executer_nation_members.size();
 
     if (executer_rank == HEAD_OF_STATE && executer_nation_member_count > 1)
     {
@@ -93,8 +106,6 @@ void Nation::leave_nation
     ////////////////// 2) //////////////////
     ///////// a. /////////
     Database::db_query(database, "DELETE FROM nationalities WHERE user_id = '" + executer_user_id + "'");
-    const std::string executer_rank_name = Text::get_rank(executer_rank);
-
     event.reply(dpp::message(":wave: You left the " + executer_nation_government_type + " of " + executer_nation_name + " and lost your " + executer_rank_name + " rank.").set_flags(dpp::m_ephemeral));
 
     ///////// b. /////////

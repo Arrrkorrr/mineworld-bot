@@ -1,5 +1,6 @@
 #include "nation.hpp"
 
+#include "../../enum/nations.hpp"
 #include "../../enum/ranks.hpp"
 #include "../../utils/database/database.hpp"
 #include "../../utils/logs/logs.hpp"
@@ -109,12 +110,12 @@ void Nation::nation_rank
 
     ///////// f. /////////
     const std::string executer_nation_id = executer_nationality[0]["nation_id"];
-    Database::Output executer_nation = Database::db_query(database, "SELECT nations.display_name, governments.government_type, governments.leader_count, governments.government_count FROM nations JOIN governments ON governments.nation_id = nations.nation_id WHERE nation_id = '" + executer_nation_id + "' LIMIT 1");
+    Database::Output executer_nation = Database::db_query(database, "SELECT nations.display_name, governments.government_type, governments.leader_count, governments.government_count FROM nations JOIN governments ON governments.nation_id = nations.nation_id WHERE nation_id = '" + executer_nation_id + "' AND nations.deleted = '" + std::to_string(EXISTING_NATION) + "' LIMIT 1");
 
     if (executer_nation.size() == 0)
     {
         Logs::log("Warning: Nation ID " + executer_nation_id + " missing in database -> /nation leave.");
-        return event.reply(dpp::message(":prohibited: Something went wrong while retrieving information about nation `" + executer_nation_id + "`.").set_flags(dpp::m_ephemeral));
+        return event.reply(dpp::message(":prohibited: Your nation `" + executer_nation_id + "` no longer exists.").set_flags(dpp::m_ephemeral));
     }
 
     ///////// g. /////////
