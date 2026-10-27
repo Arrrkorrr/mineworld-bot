@@ -2,20 +2,22 @@
 
 #include "../buttons/buttons.hpp"
 
+#include <dpp/cluster.h>
+#include <dpp/dispatcher.h>
 #include <dpp/dpp.h>
 #include <mysql/mysql.h>
 #include <string>
 
 /*
-    Event that triggers when a button has been clicked.
+    Event triggered when a button has been pressed.
 
     Tasks:
-        1) Add the listener to the bot.
-        2) Handle request depending on the button ID.
+        1) Add listener to bot.
+        2) Handle request depending on button ID.
 
     Parameters (variable_name / type / description):
-        - bot       / dpp::cluster / Client of the bot with all related information.
-        - database  / MYSQL*       / MineWorld database
+        - bot      / dpp::cluster / Client of the bot with all related information.
+        - database / MYSQL*       / MineWorld database.
 
     Returns (type + description):
         No object returned.
@@ -30,11 +32,13 @@ void Events::button_click
     bot.on_button_click([&bot, &database](dpp::button_click_t event)
     {
         ////////////////// 2) //////////////////
-        const std::string ID = event.custom_id;
+        const std::string button_id = event.custom_id;
 
-        if (ID == "journalism_censor" || ID == "journalism_blacklist")
-            Buttons::journalism_censor(bot, database, event, ID);
-        else if (ID == "journalism_delete")
-            Buttons::journalism_delete(bot, event);
+        if (button_id == "journalism_blacklist")
+            Buttons::Journalism::journalism_blacklist(bot, database, event);
+        else if (button_id == "journalism_censor")
+            Buttons::Journalism::journalism_censor(bot, database, event);
+        else if (button_id == "journalism_delete")
+            Buttons::Journalism::journalism_delete(bot, database, event);
     });
 }

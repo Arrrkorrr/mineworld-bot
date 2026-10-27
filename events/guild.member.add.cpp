@@ -3,24 +3,28 @@
 #include "../utils/database/database.hpp"
 #include "../utils/logs/logs.hpp"
 
+#include <dpp/cluster.h>
+#include <dpp/dispatcher.h>
 #include <dpp/dpp.h>
+#include <dpp/restresults.h>
+#include <dpp/snowflake.h>
 #include <mysql/mysql.h>
 #include <string>
 
 /*
-    Event that triggers when a new member joins a guild.
+    Event triggered when a new member joins a guild.
 
     Tasks:
-        1) Add the listener to the bot.
-        2) Handle the new member.
+        1) Add listener to bot.
+        2) Handle new member.
             a. Get some information about the event and log the arrival.
-            b. Try to get some configuration from the database.
-            c. Try to give the "Member" role to the new member.
-            d. Try to send a welcome message.
+            b. Get bot configuration.
+            c. Give member role to the new member.
+            d. Send a welcome message.
 
     Parameters (variable_name / type / description):
-        - bot       / dpp::cluster / Client of the bot with all related information.
-        - database  / MYSQL*       / MineWorld database
+        - bot      / dpp::cluster / Client of the bot with all related information.
+        - database / MYSQL*       / MineWorld database.
 
     Returns (type + description):
         No object returned.
@@ -37,38 +41,38 @@ void Events::guild_member_add
         ////////////////// 2) //////////////////
         ///////// a. /////////
         const dpp::snowflake guild_id = event.adding_guild.id;
-        const dpp::snowflake user_id = event.added.user_id;
+        const dpp::snowflake new_member_discord_id = event.added.user_id;
 
-        Logs::log("New member on guild " + std::to_string(guild_id) + " -> " + std::to_string(user_id) + ".");
+        Logs::log("New member on guild " + std::to_string(guild_id) + " -> " + std::to_string(new_member_discord_id) + ".");
 
         ///////// b. /////////
         Database::Output config = Database::db_query(database, "SELECT member_role, welcome_channel FROM config LIMIT 1");
 
         if (config.size() == 0)
         {
-            Logs::log("Warning: No config available -> guild member add.");
+            Logs::log("Warning: No config available -> new member.");
             return;
         }
 
         ///////// c. /////////
-        const dpp::snowflake member_role = dpp::snowflake(config[0]["member_role"]);
+        const dpp::snowflake member_role_id = dpp::snowflake(config[0]["member_role"]);
 
-        bot.guild_member_add_role(guild_id, user_id, member_role, [member_role, user_id](const dpp::confirmation_callback_t &callback)
+        bot.guild_member_add_role(guild_id, new_member_discord_id, member_role_id, [member_role_id, new_member_discord_id](const dpp::confirmation_callback_t &callback)
         {
             if (callback.is_error())
-                Logs::log("Warning: Failed to add role " + std::to_string(member_role) + " to " + std::to_string(user_id) + " with error " + callback.get_error().human_readable + " -> guild member add.");
+                Logs::log("Warning: Failed to add role " + std::to_string(member_role_id) + " to " + std::to_string(new_member_discord_id) + " with error " + callback.get_error().human_readable + " -> guild member add.");
         });
 
         ///////// d. /////////
-        const dpp::snowflake welcome_channel = dpp::snowflake(config[0]["welcome_channel"]);
+        const dpp::snowflake welcome_channel_id = dpp::snowflake(config[0]["welcome_channel"]);
 
         bot.message_create
         (
-            dpp::message(welcome_channel, ":wave: **Welcome** to <@" + std::to_string(user_id) + "> who **just joined** the server!"),
-            [welcome_channel](const dpp::confirmation_callback_t &callback)
+            dpp::message(welcome_channel_id, ":wave: **Welcome** to <@" + std::to_string(new_member_discord_id) + "> who **just joined** the server!"),
+            [welcome_channel_id](const dpp::confirmation_callback_t &callback)
             {
                 if (callback.is_error())
-                    Logs::log("Warning: Failed to send message in " + std::to_string(welcome_channel) + " with error " + callback.get_error().human_readable + " -> guild member add.");
+                    Logs::log("Warning: Failed to send message in " + std::to_string(welcome_channel_id) + " with error " + callback.get_error().human_readable + " -> guild member add.");
             }
         );
     });

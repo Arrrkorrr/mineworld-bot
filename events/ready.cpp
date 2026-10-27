@@ -2,17 +2,22 @@
 
 #include "../utils/logs/logs.hpp"
 
+#include <dpp/appcommand.h>
+#include <dpp/cluster.h>
+#include <dpp/dispatcher.h>
 #include <dpp/dpp.h>
+#include <dpp/presence.h>
+#include <dpp/timer.h>
 #include <string>
 #include <vector>
 
 /*
-    Code ran on bot startup.
+    Code to run on bot startup.
 
     Tasks:
-        1) Enable D++ logs and start the "ready" event.
-        2) Deploy slash commands in bulk to the client.
-        3) Set the bot dynamic bot status and log the successful start.
+        1) Enable D++ logs and add ready event.
+        2) Deploy slash commands in bulk to Discord client.
+        3) Set dynamic bot status.
 
     Parameters:
         - bot / dpp::cluster / Client of the bot with all related information.
@@ -349,5 +354,5 @@ void Events::ready
         }, 4);
     });
 
-    Logs::log("The bot successfully booted up and deployed slash commands!");
+    Logs::log("MineWorld bot successfully booted up and all slash commands were deployed.");
 }

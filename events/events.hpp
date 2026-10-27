@@ -1,6 +1,7 @@
 #ifndef EVENTS_HPP
 #define EVENTS_HPP
 
+#include <dpp/cluster.h>
 #include <dpp/dpp.h>
 #include <mysql/mysql.h>
 
