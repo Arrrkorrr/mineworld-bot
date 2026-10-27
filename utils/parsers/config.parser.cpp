@@ -12,12 +12,12 @@
     Warning: If 2+ lines in the config file declare the same key, the most recent value found will be returned.
 
     Tasks:
-        1) Try to open the config file.
-        2) Proceed to the parsing.
-            a. Check every single line of the config file.
-            b. Verify that the line is valid.
-            c. Verify that the line contains an equal sign.
-            d. If the key is valid, register the key and its value.
+        1) Open config file.
+        2) Proceed to parsing.
+            a. Check every single line of config file.
+            b. Verify that line is valid.
+            c. Verify that line contains an equal sign.
+            d. If key is valid, register the key and its value.
         3) Free the file.
 
     Parameters (variable_name / type / description):

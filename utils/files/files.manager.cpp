@@ -10,18 +10,18 @@
     Create a new empty file.
 
     Tasks:
-        1) We do some verification.
-            a. Verify that the path contains a file name.
-            b. Verify that another file at the targeted path does not already exist.
+        1) Some verification.
+            a. Verify that path contains a file name.
+            b. Verify that another file at targeted path does not already exist.
         2) Proceed to the file creation.
             a. Create a new file.
             b. Verify the file was successfully created.
 
     Parameters (variable_name / type / description):
-        - file_path / string / Targeted path containing the new file name.
+        - file_path / string / Targeted path containing new file name.
 
     Returns (type + description):
-        A boolean confirming whether we successfully created the empty file or not.
+        A boolean confirming whether we created a new empty file or not.
 */
 bool Files::create_new_empty_file
 (
@@ -70,13 +70,13 @@ bool Files::create_new_empty_file
     Write some data into a file.
 
     Tasks:
-        1) We do some verification.
-            a. Verify that the path contains a file name.
-            b. Verify that the file exists, if not, create a new empty file at the desired path.
-        2) Proceed to writing into the file.
-            a. Open the file in append or overwrite mod.
-            b. Verify that the file is opened.
-            c. Insert the data into the file.
+        1) Some verification.
+            a. Verify that path contains a file name.
+            b. Verify that file exists, if not, create a new empty file at desired path.
+        2) Proceed to writing into file.
+            a. Open file in append or overwrite mod.
+            b. Verify that file is opened.
+            c. Insert data into the file.
 
     Parameters (variable_name / type / description):
         - append    / bool   / Append the file or overwrite the file.

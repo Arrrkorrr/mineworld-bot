@@ -7,11 +7,11 @@
     Sanitize an input to prevent SQL injection.
 
     Tasks:
-        1) Set the output string as the input length * 2 + 1 as it is the maximum possible length.
-        2) Use MySQL built-in fuction to sanitize and resize the output to the sanitized length.
+        1) Set output string as input length * 2 + 1 as it is the maximum possible length.
+        2) Use MySQL built-in fuction to sanitize and resize output to sanitized length.
 
     Parameters (variable_name / type / description):
-        - database / MYSQL* / MineWorld database
+        - database / MYSQL* / MineWorld database.
         - input    / string / Data to sanitize.
 
     Returns (type + description):

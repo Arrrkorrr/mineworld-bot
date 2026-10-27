@@ -3,12 +3,12 @@
 #include <string>
 
 /*
-    Remove the starting and trailing whitespaces.
+    Remove starting and trailing whitespaces.
 
     Tasks:
-        1) Detect the position of the first character that is not a whitespace, from the beginning.
-        2) Detect the position of the first character that is not a whitespace, from the ending.
-        3) Set the output as starting and ending from the positions retrieved previously.
+        1) Detect position of the first character that is not a whitespace from beginning.
+        2) Detect position of the first character that is not a whitespace, from ending.
+        3) Set output as starting and ending from positions retrieved previously.
 
     Parameters (variable_name / type / description):
         - input / string / Text to trim.

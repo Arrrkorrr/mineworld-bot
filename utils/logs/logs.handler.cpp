@@ -12,15 +12,15 @@
 #include <vector>
 
 /*
-    Send a message in the terminal.
+    Send a message in terminal.
 
     Tasks:
-        1) Verify that the message to log is not empty.
+        1) Verify that message to log is not empty.
         2) Handle the log.
-            a. Get the current timestamp and convert into a data.
-            b. Format the message. Date format: DD.MM.YY-HH:MN:SS.
-            c. Send the log into the terminal.
-        3) If enabled (config/tweaks.hpp), we also write the log into the "bot.logs".
+            a. Get current timestamp and convert into a data.
+            b. Format message. Date format: DD.MM.YY-HH:MN:SS.
+            c. Send log into the terminal.
+        3) If enabled (config/tweaks.hpp), we also write log into "bot.logs".
 
     Parameters (variable_name / type / description):
         - message / string / Message to log.
@@ -57,11 +57,11 @@ void Logs::log
 
 
 /*
-    Send a message in the terminal and throw a runtime error.
+    Send a message in terminal and throw runtime error.
 
     Tasks:
-        1) Send the log into the terminal.
-        2) If enabled (config/tweaks.hpp), we also write the log into the "bot.logs".
+        1) Send log into terminal.
+        2) If enabled (config/tweaks.hpp), we also write log into "bot.logs".
         3) Throw a runtime error with the message.
 
     Parameters (variable_name / type / description):

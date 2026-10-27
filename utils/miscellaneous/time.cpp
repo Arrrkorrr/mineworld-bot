@@ -5,16 +5,13 @@
 #include <vector>
 
 /*
-    Get the timestamp of the actual time.
-
-    Tasks:
-        1) Get the current timestamp.
+    Get timestamp of actual time.
 
     Parameters (variable_name / type / description):
         No parameters.
 
     Returns (type + description):
-        A time_t containg the current timestamp.
+        A time_t containing the current timestamp.
 */
 time_t Miscellaneous::get_current_timestamp()
 {
@@ -25,13 +22,13 @@ time_t Miscellaneous::get_current_timestamp()
 
 
 /*
-    Get the date of a timestamp.
+    Get date of a timestamp.
 
     Tasks:
-        1) Get the time.
-            a. From the timestamp, get time data for host timezone.
-            b. Get time elements and fix year that counts from year 1900 and months as the range is (0 - 11).
-        2) Format some time elements and prepare the output.
+        1) Get time.
+            a. From timestamp, get time data for host timezone.
+            b. Get time elements and fix year that counts from year 1900 and months as range is (0 - 11).
+        2) Format some time elements and prepare output.
 
     Parameters:
         - timestamp / time_t / Timestamp used to get the date from.

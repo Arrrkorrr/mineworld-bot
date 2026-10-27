@@ -9,7 +9,7 @@
     Convert some text to lower cases only.
 
    Tasks:
-       1) Replace each character to its lower case version one by one.
+       1) Replace each character to its lower case version.
 
    Parameters (variable_name / type / description):
        - input / string / Text to format.

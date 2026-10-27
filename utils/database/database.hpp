@@ -22,8 +22,8 @@ namespace Database
     (
         MYSQL*            &database,
         const std::string &database_name,
-        const std::string &host,
-        const int         &port,
+        const std::string &database_host,
+        const int         &database_port,
         const std::string &user,
         const std::string &password
     );
@@ -68,8 +68,8 @@ namespace Database
             (
                 MYSQL*            &database,
                 const std::string &database_name,
-                const std::string &host,
-                const int         &port,
+                const std::string &database_host,
+                const int         &database_port,
                 const std::string &user,
                 const std::string &password
             );

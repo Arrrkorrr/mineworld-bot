@@ -8,7 +8,7 @@
 
     Tasks:
         1) Create a pattern that detects any non-numeric characters.
-        2) Apply the pattern to the input.
+        2) Apply pattern to input.
 
     Parameters (variable_name / type / description):
         - input / string / Input to check.

@@ -13,14 +13,14 @@
     Connect to a database.
 
     Tasks:
-        1) Try to initialize MySQL.
-        2) Try to connect to the database with the credentials provided.
+        1) Initialize MySQL.
+        2) Connect to the database with the credentials provided.
 
     Parameters (variable_name / type / description):
         - database      / MYSQL* / Object that will point to the database once connected.
         - database_name / string / Name of the database to use.
-        - host          / string / IP address or domain name of the database.
-        - port          / int    / Port of the database.
+        - database_host / string / IP address or domain name of the database.
+        - database_port / int    / Port of the database.
         - user          / string / User to use in order to connect to the database.
         - password      / string / Password of the user.
 
@@ -31,8 +31,8 @@ void Database::connect_database
 (
     MYSQL*            &database,
     const std::string &database_name,
-    const std::string &host,
-    const int         &port,
+    const std::string &database_host,
+    const int         &database_port,
     const std::string &user,
     const std::string &password
 )
@@ -48,7 +48,7 @@ void Database::connect_database
     mysql_options(database, MYSQL_OPT_RECONNECT, &reconnect);
 
     ////////////////// 2) //////////////////
-    const MYSQL* connection = mysql_real_connect(database, host.c_str(), user.c_str(), password.c_str(), database_name.c_str(), port, nullptr, 0);
+    const MYSQL* connection = mysql_real_connect(database, database_host.c_str(), user.c_str(), password.c_str(), database_name.c_str(), database_port, nullptr, 0);
 
     if (connection == nullptr)
     {
@@ -58,7 +58,7 @@ void Database::connect_database
         Logs::crash_log("Failed to establish connection with the database. Error code -> " + error + ".");
     }
 
-    Logs::log("Connection to database " + database_name + "@" + host + " as " + user + " estabished.");
+    Logs::log("Connection to database " + database_name + "@" + database_host + " as " + user + " established.");
 }
 
 
@@ -67,7 +67,7 @@ void Database::connect_database
     Disconnect from a database.
 
     Tasks:
-        1) Verify that the database provided is valid.
+        1) Verify that the database is valid.
         2) Disconnect from the database.
 
     Parameters (variable_name / type / description):
@@ -105,14 +105,14 @@ Database::database_handler::database_handler
 (
     MYSQL*            &database,
     const std::string &database_name,
-    const std::string &host,
-    const int         &port,
+    const std::string &database_host,
+    const int         &database_port,
     const std::string &user,
     const std::string &password
 )
     : database(database)
 {
-    connect_database(database, database_name, host, port, user, password);
+    connect_database(database, database_name, database_host, database_port, user, password);
 }
 
 Database::database_handler::~database_handler()

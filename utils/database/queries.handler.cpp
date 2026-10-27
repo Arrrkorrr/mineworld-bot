@@ -9,13 +9,13 @@
     Make a query to the database.
 
     Tasks:
-        1) Verify that the database provided is valid.
-        2) Try to make the query to the database.
-        3) Process the output data.
-            a. Try to get the query result.
-            b. Register the column names of the table as the map keys.
-            c. Register the rows data and associate it to all previously registered map keys.
-            d. Free allocated memory and return the output.
+        1) Verify that the database is valid.
+        2) Make the query to the database.
+        3) Process output data.
+            a. Get query result.
+            b. Register the column names of the table as map keys.
+            c. Register the rows data and associate it to all map keys.
+            d. Free allocated memory.
 
     Parameters (variable_name / type / description):
         - database / MYSQL* / Database to query.
