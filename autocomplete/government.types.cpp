@@ -18,8 +18,8 @@
         2) Display all existing government types to the user.
 
     Parameters (variable_name / type / description):
-        - bot       / dpp::cluster        / Client of the bot with all related information.
-        - event     / dpp::autocomplete_t / All information about the event.
+        - bot   / dpp::cluster        / Client of the bot with all related information.
+        - event / dpp::autocomplete_t / All information about the event.
 
     Returns (type + description):
         No object returned.

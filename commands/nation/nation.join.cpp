@@ -41,9 +41,9 @@
             c. Send a notification embed in the world channel.
 
     Parameters (variable_name / type / description):
-        - bot       / dpp::cluster              / Client of the bot with all related information.
-        - database  / MYSQL*                    / MineWorld database.
-        - event     / dpp::interaction_create_t / All information about the event.
+        - bot      / dpp::cluster              / Client of the bot with all related information.
+        - database / MYSQL*                    / MineWorld database.
+        - event    / dpp::interaction_create_t / All information about the event.
 
     Returns (type + description):
         No object returned.
@@ -88,7 +88,7 @@ void Nation::join_nation
     }
 
     ///////// d. /////////
-    const std::string government_type = Text::get_government_type(std::stoi(nation[0]["governments.government_type"]));
+    const std::string government_type = Text::Nations::get_government_type(std::stoi(nation[0]["governments.government_type"]));
     const int join_condition = std::stoi(nation[0]["immigration.join_condition"]);
     const std::string nation_name = nation[0]["nations.display_name"];
 
@@ -196,7 +196,7 @@ void Nation::join_nation
 
         if (inviter_nationality.size() != 0)
         {
-            const std::string rank = Text::get_rank(std::stoi(inviter_nationality[0]["rank"]));
+            const std::string rank = Text::Nations::get_rank(std::stoi(inviter_nationality[0]["rank"]));
             was_invited_text = " They were invited by the " + rank + " <@" + inviter_discord_id + "> of " + nation_name + ".";
         }
     }

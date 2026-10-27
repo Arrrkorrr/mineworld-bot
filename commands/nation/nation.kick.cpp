@@ -39,9 +39,9 @@
             d. Send a notification embed in the world channel.
 
     Parameters (variable_name / type / description):
-        - bot       / dpp::cluster              / Client of the bot with all related information.
-        - database  / MYSQL*                    / MineWorld database.
-        - event     / dpp::interaction_create_t / All information about the event.
+        - bot      / dpp::cluster              / Client of the bot with all related information.
+        - database / MYSQL*                    / MineWorld database.
+        - event    / dpp::interaction_create_t / All information about the event.
 
     Returns (type + description):
         No object returned.
@@ -106,7 +106,7 @@ void Nation::nation_kick
     const std::string target_user_id = target_credentials[0]["user_id"];
     Database::Output target_nationality = Database::db_query(database, "SELECT nation_id, rank FROM nationalities WHERE user_id = '" + target_user_id + "' LIMIT 1");
 
-    const std::string executer_nation_government_type = Text::get_government_type(std::stoi(executer_nation[0]["governments.government_type"]));
+    const std::string executer_nation_government_type = Text::Nations::get_government_type(std::stoi(executer_nation[0]["governments.government_type"]));
     const std::string executer_nation_name = executer_nation[0]["nations.display_name"];
 
     if (target_nationality.size() == 0)
@@ -129,7 +129,7 @@ void Nation::nation_kick
         }
 
         const std::string target_nation_name = target_nation[0]["display_name"];
-        const std::string target_nation_government_type = Text::get_government_type(std::stoi(target_nation[0]["government_type"]));
+        const std::string target_nation_government_type = Text::Nations::get_government_type(std::stoi(target_nation[0]["government_type"]));
 
         return event.reply(dpp::message(":prohibited: You can not kick <@" + std::to_string(target_discord_id) + "> out of the " + executer_nation_government_type + " of " + executer_nation_name + " as they are part of " + target_nation_government_type + " " + target_nation_name + ".").set_flags(dpp::m_ephemeral));
     }
@@ -137,7 +137,7 @@ void Nation::nation_kick
     ////////////////// 2) //////////////////
     ///////// a. /////////
     const int executer_rank = std::stoi(executer_nationality[0]["rank"]);
-    const std::string executer_rank_name = Text::get_rank(executer_rank);
+    const std::string executer_rank_name = Text::Nations::get_rank(executer_rank);
 
     if (executer_rank == CITIZEN || executer_rank == MILITARY)
     {
@@ -147,7 +147,7 @@ void Nation::nation_kick
 
     ///////// b. /////////
     const int target_rank = std::stoi(target_nationality[0]["rank"]);
-    const std::string target_rank_name = Text::get_rank(target_rank);
+    const std::string target_rank_name = Text::Nations::get_rank(target_rank);
 
     if (target_rank == executer_rank)
     {

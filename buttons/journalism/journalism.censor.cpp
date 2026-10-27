@@ -41,9 +41,9 @@
             b. Update the stats.
 
     Parameters (variable_name / type / description):
-        - bot       / dpp::cluster        / Client of the bot with all related information.
-        - database  / MYSQL*              / MineWorld database.
-        - event     / dpp::button_click_t / All information about the event.
+        - bot      / dpp::cluster        / Client of the bot with all related information.
+        - database / MYSQL*              / MineWorld database.
+        - event    / dpp::button_click_t / All information about the event.
 
     Returns (type + description):
         A BlacklistInfo object that contains the publisher user ID, the nation freedom rating and ID.
@@ -88,7 +88,7 @@ BlacklistInfo Journalism::journalism_censor
 
     ///////// d. /////////
     const std::string executer_nation_name = executer_nation[0]["nations.display_name"];
-    const std::string executer_nation_government_type = Text::get_government_type(std::stoi(executer_nation[0]["governments.government_type"]));
+    const std::string executer_nation_government_type = Text::Nations::get_government_type(std::stoi(executer_nation[0]["governments.government_type"]));
     const int executer_rank = std::stoi(executer_nationality[0]["rank"]);
 
     if (executer_rank < MINISTER)
@@ -111,7 +111,7 @@ BlacklistInfo Journalism::journalism_censor
 
     ///////// f. /////////
     const std::string post_nation_id = post[0]["nation_id"];
-    const std::string executer_rank_name = Text::get_rank(executer_rank);
+    const std::string executer_rank_name = Text::Nations::get_rank(executer_rank);
 
     if (executer_nation_id != post_nation_id)
     {
@@ -125,7 +125,7 @@ BlacklistInfo Journalism::journalism_censor
         }
 
         const std::string publication_nation_name = publication_nation[0]["nations.display_name"];
-        const std::string publication_nation_government_type = Text::get_government_type(std::stoi(publication_nation[0]["governments.government_type"]));
+        const std::string publication_nation_government_type = Text::Nations::get_government_type(std::stoi(publication_nation[0]["governments.government_type"]));
 
         event.reply(dpp::message(":prohibited: You can not censor a post published from the " + publication_nation_government_type + " of " + publication_nation_name + " being " + executer_rank_name + " of the " + executer_nation_government_type + " of " + executer_nation_name + ".").set_flags(dpp::m_ephemeral));
         return { "", -1, "" };
@@ -144,7 +144,7 @@ BlacklistInfo Journalism::journalism_censor
     Database::Output publisher_nationality = Database::db_query(database, "SELECT nationalities.nation_id, nationalities.rank, players.discord_id FROM nationalities JOIN players ON players.user_id = nationalities.user_id WHERE nationalities.user_id = '" + publisher_user_id + "' LIMIT 1");
 
     const int publisher_rank = std::stoi(publisher_nationality[0]["nationalities.rank"]);
-    const std::string publisher_rank_name = Text::get_rank(publisher_rank);
+    const std::string publisher_rank_name = Text::Nations::get_rank(publisher_rank);
 
     if (publisher_nationality.size() != 0)
     {

@@ -33,9 +33,9 @@
             d. Send a notification embed in the world channel.
 
     Parameters (variable_name / type / description):
-        - bot       / dpp::cluster              / Client of the bot with all related information.
-        - database  / MYSQL*                    / MineWorld database.
-        - event     / dpp::interaction_create_t / All information about the event.
+        - bot      / dpp::cluster              / Client of the bot with all related information.
+        - database / MYSQL*                    / MineWorld database.
+        - event    / dpp::interaction_create_t / All information about the event.
 
     Returns (type + description):
         No object returned.
@@ -79,11 +79,11 @@ void Nation::leave_nation
     }
 
     ///////// d. /////////
-    const std::string executer_nation_government_type = Text::get_government_type(std::stoi(executer_nation[0]["governments.government_type"]));
+    const std::string executer_nation_government_type = Text::Nations::get_government_type(std::stoi(executer_nation[0]["governments.government_type"]));
     const std::string executer_nation_name = executer_nation[0]["nations.display_name"];
     const int executer_nation_status = std::stoi(executer_nation[0]["nations.deleted"]);
     const int executer_rank = std::stoi(executer_nation[0]["rank"]);
-    const std::string executer_rank_name = Text::get_rank(executer_rank);
+    const std::string executer_rank_name = Text::Nations::get_rank(executer_rank);
 
     const bool is_invalid_nation = (executer_nation_status == COLLAPSED_NATION || executer_nation_status == NATION_REMOVED_MODERATION);
 

@@ -41,9 +41,9 @@
             b. Send a notification embed in the world channel.
 
     Parameters (variable_name / type / description):
-        - bot       / dpp::cluster              / Client of the bot with all related information.
-        - database  / MYSQL*                    / MineWorld database.
-        - event     / dpp::interaction_create_t / All information about the event.
+        - bot      / dpp::cluster              / Client of the bot with all related information.
+        - database / MYSQL*                    / MineWorld database.
+        - event    / dpp::interaction_create_t / All information about the event.
 
     Returns (type + description):
         No object returned.
@@ -99,8 +99,8 @@ void Nation::nation_create
         }
 
         const std::string executer_nation_name = executer_nation[0]["nations.display_name"];
-        const std::string executer_government_type = Text::get_government_type(std::stoi(executer_nation[0]["governments.government_type"]));
-        const std::string executer_rank_name = Text::get_rank(std::stoi(executer_nationality[0]["rank"]));
+        const std::string executer_government_type = Text::Nations::get_government_type(std::stoi(executer_nation[0]["governments.government_type"]));
+        const std::string executer_rank_name = Text::Nations::get_rank(std::stoi(executer_nationality[0]["rank"]));
 
         return event.reply(dpp::message(":prohibited: You are already part of the " + executer_government_type + " of " + executer_nation_name + " as " + executer_rank_name + ".").set_flags(dpp::m_ephemeral));
     }
@@ -129,7 +129,7 @@ void Nation::nation_create
     Database::db_query(database, "INSERT INTO warfare (nation_id) VALUES ('" + nation_id + "')");
 
     ///////// d. /////////
-    const std::string government_type_name = Text::get_government_type(government_type);
+    const std::string government_type_name = Text::Nations::get_government_type(government_type);
     const std::string head_of_state_rank = std::to_string(HEAD_OF_STATE);
 
     Database::db_query(database, "INSERT INTO nationality (user_id, nation_id, rank, last_rank_update, joining_time) VALUES ('" + executer_id + "', '" + nation_id + "', '" + head_of_state_rank + "', '" + now + "', '" + now + "')");
@@ -174,7 +174,7 @@ void Nation::nation_create
     const dpp::embed embed = dpp::embed()
     .set_color(dpp::colors::light_green)
     .set_title("New Nation")
-    .set_description("Stateless <@" + std::to_string(executer_discord_id) + "> created and took the leadership of the " + government_type_name + " of " + nation_name + " that advocates " + Text::get_ideology(ideology) + ".");
+    .set_description("Stateless <@" + std::to_string(executer_discord_id) + "> created and took the leadership of the " + government_type_name + " of " + nation_name + " that advocates " + Text::Nations::get_ideology(ideology) + ".");
 
     bot.message_create
     (

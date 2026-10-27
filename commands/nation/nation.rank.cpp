@@ -46,9 +46,9 @@
             c. Send the notification embed in the world channel.
 
     Parameters (variable_name / type / description):
-        - bot       / dpp::cluster              / Client of the bot with all related information.
-        - database  / MYSQL*                    / MineWorld database.
-        - event     / dpp::interaction_create_t / All information about the event.
+        - bot      / dpp::cluster              / Client of the bot with all related information.
+        - database / MYSQL*                    / MineWorld database.
+        - event    / dpp::interaction_create_t / All information about the event.
 
     Returns (type + description):
         No object returned.
@@ -123,8 +123,8 @@ void Nation::nation_rank
     Database::Output target_nationality = Database::db_query(database, "SELECT nation_id, rank FROM nationalities WHERE user_id = '" + target_user_id + "' LIMIT 1");
 
     const std::string executer_nation_name = executer_nation[0]["nations.display_name"];
-    const std::string executer_nation_government_type = Text::get_government_type(std::stoi(executer_nation[0]["governments.government_type"]));
-    const std::string new_rank_name = Text::get_rank(new_rank);
+    const std::string executer_nation_government_type = Text::Nations::get_government_type(std::stoi(executer_nation[0]["governments.government_type"]));
+    const std::string new_rank_name = Text::Nations::get_rank(new_rank);
 
     if (target_nationality.size() == 0)
     {
@@ -135,7 +135,7 @@ void Nation::nation_rank
     ///////// h. /////////
     const std::string target_nation_id = target_nationality[0]["nation_id"];
     const int target_rank = std::stoi(target_nationality[0]["rank"]);
-    const std::string target_rank_name = Text::get_rank(target_rank);
+    const std::string target_rank_name = Text::Nations::get_rank(target_rank);
 
     if (target_nation_id != executer_nation_id)
     {
@@ -171,7 +171,7 @@ void Nation::nation_rank
     }
 
     ///////// c. /////////
-    const std::string executer_rank_name = Text::get_rank(executer_rank);
+    const std::string executer_rank_name = Text::Nations::get_rank(executer_rank);
 
     if (new_rank > executer_rank)
     {

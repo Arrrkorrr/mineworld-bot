@@ -39,9 +39,9 @@
             b. Send a notification embed in the world channel.
 
     Parameters (variable_name / type / description):
-        - bot       / dpp::cluster              / Client of the bot with all related information.
-        - database  / MYSQL*                    / MineWorld database.
-        - event     / dpp::interaction_create_t / All information about the event.
+        - bot      / dpp::cluster              / Client of the bot with all related information.
+        - database / MYSQL*                    / MineWorld database.
+        - event    / dpp::interaction_create_t / All information about the event.
 
     Returns (type + description):
         No object returned.
@@ -96,7 +96,7 @@ void Nation::nation_relation
 
     ///////// e. /////////
     const std::string executer_nation_name = executer_nationality[0]["nations.display_name"];
-    const std::string executer_nation_government_type = Text::get_government_type(std::stoi(executer_nationality[0]["governments.government_type"]));
+    const std::string executer_nation_government_type = Text::Nations::get_government_type(std::stoi(executer_nationality[0]["governments.government_type"]));
 
     if (executer_nation_id == targeted_nation_id)
     {
@@ -107,7 +107,7 @@ void Nation::nation_relation
     ///////// f. /////////
     const int executer_rank = std::stoi(executer_nationality[0]["rank"]);
     const std::string targeted_nation_name = targeted_nation[0]["nations.display_name"];
-    const std::string targeted_nation_government_type = Text::get_government_type(std::stoi(targeted_nation[0]["governments.government_type"]));
+    const std::string targeted_nation_government_type = Text::Nations::get_government_type(std::stoi(targeted_nation[0]["governments.government_type"]));
 
     if (executer_rank < MINISTER)
     {
@@ -132,13 +132,13 @@ void Nation::nation_relation
 
     ///////// c. /////////
     const int current_relation_score = (current_executer_nation_relation + current_targeted_nation_relation) / 2;
-    const std::string current_relation_rating = Text::get_relation_rating(current_relation_score);
+    const std::string current_relation_rating = Text::Nations::get_relation_rating(current_relation_score);
 
     ///////// d. /////////
     const int new_score = std::clamp(std::get<int64_t>(event.get_parameter("score")), 0L, 100L);
 
     const int new_relation_score = (new_score + current_targeted_nation_relation) / 2;
-    const std::string new_relation_rating = Text::get_relation_rating(new_relation_score);
+    const std::string new_relation_rating = Text::Nations::get_relation_rating(new_relation_score);
 
     ///////// e. /////////
     const bool increased = (new_relation_score > current_relation_score);

@@ -26,9 +26,9 @@
             b. Construct embed.
 
     Parameters (variable_name / type / description):
-        - bot       / dpp::cluster              / Client of the bot with all related information.
-        - database  / MYSQL*                    / MineWorld database.
-        - event     / dpp::interaction_create_t / All information about the event.
+        - bot      / dpp::cluster              / Client of the bot with all related information.
+        - database / MYSQL*                    / MineWorld database.
+        - event    / dpp::interaction_create_t / All information about the event.
 
     Returns (type + description):
         No object returned.
@@ -69,9 +69,9 @@ void Nation::nation_info
     ///////// a. /////////
     const std::string nation_creation_time = (nation[0]["nations.creation_time"] == "0" ? "Never" : "<t:" + nation[0]["nations.creation_time"] + ":f>");
     const std::string nation_description = nation[0]["nations.description"];
-    const std::string nation_government_type = Text::get_government_type(std::stoi(nation[0]["governments.government_type"]));
-    const std::string nation_ideology = Text::get_ideology(std::stoi(nation[0]["governments.ideology"]));
-    const std::string nation_join_condition = Text::get_join_condition(std::stoi(nation[0]["immigration.join_condition"]));
+    const std::string nation_government_type = Text::Nations::get_government_type(std::stoi(nation[0]["governments.government_type"]));
+    const std::string nation_ideology = Text::Nations::get_ideology(std::stoi(nation[0]["governments.ideology"]));
+    const std::string nation_join_condition = Text::Nations::get_join_condition(std::stoi(nation[0]["immigration.join_condition"]));
     const std::string nation_members_count = std::to_string(nation_members[0].size());
     const std::string nation_name = nation[0]["nations.display_name"];
     const std::string nation_role = (nation[0]["nations.role_id"] == "0" ? "No role generated yet" : "<@&" + nation[0]["nations.role_id"] + "> ||" + nation[0]["role_id"] + "||");
